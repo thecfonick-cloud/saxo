@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
+<!-- Fixed Material Icons CDN -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0,1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: { "primary": "#d4af35", "background-light": "#f8f7f6", "background-dark": "#201d12" },
+                fontFamily: { "display": ["Inter"] },
+                animation: { 'slide-up': 'slideUp 0.7s ease-out forwards', 'ken-burns': 'kenBurns 20s ease-in-out infinite alternate' },
+                keyframes: { slideUp: { '0%': { opacity: '0', transform: 'translateY(30px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }, kenBurns: { '0%': { transform: 'scale(1) translateX(0)' }, '100%': { transform: 'scale(1.08) translateX(-2%)' } } }
+            }
+        }
+    }
+</script>
+<style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Inter', sans-serif; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-block; vertical-align: middle; }
+    .bg-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
+    .bg-slide.active { opacity: 1; z-index: 2; animation: kenBurns 25s ease-in-out infinite alternate; }
+    .hero-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(32,29,18,0.85) 0%, rgba(32,29,18,0.65) 40%, rgba(0,0,0,0.55) 100%); backdrop-filter: blur(2px); z-index: 5; }
+    .hero-content { position: relative; z-index: 20; }
+    .slide-dot { transition: all 0.3s ease; cursor: pointer; }
+    .slide-dot.active { background-color: #d4af35; width: 2rem; box-shadow: 0 0 12px rgba(212,175,53,0.6); }
+    .price-up { color: #4ade80; }
+    .price-down { color: #f87171; }
+    .flash-green { background-color: rgba(74,222,128,0.25); transition: background 0.1s; }
+    .flash-red { background-color: rgba(248,113,113,0.25); transition: background 0.1s; }
+    .badge-pulse { box-shadow: 0 0 0 0 rgba(212,175,53,0.7); animation: badgePulse 2s infinite; }
+    @keyframes badgePulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(212,175,53,0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(212,175,53,0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(212,175,53,0); } }
+    .registration-row.new { background: linear-gradient(90deg, rgba(212,175,53,0.25), rgba(212,175,53,0.05)); animation: slideFade 0.6s ease-out; }
+    @keyframes slideFade { 0% { opacity: 0; transform: translateX(-15px); } 100% { opacity: 1; transform: translateX(0); } }
+    .scrollable-x { -webkit-overflow-scrolling: touch; scrollbar-width: thin; overflow-x: auto; }
+    @media (max-width: 640px) {
+        .hero-title { font-size: 2.5rem; line-height: 1.2; }
+        .hero-subtitle { font-size: 1rem; }
+        .footer-brand { font-size: 2.5rem !important; line-height: 1.2 !important; word-break: break-word; text-align: center; }
+        .hero-content .flex-1:first-child { text-align: center; }
+        .hero-content .inline-flex.items-center { margin-left: auto; margin-right: auto; }
+        .market-row td, .market-row th { padding-left: 0.75rem; padding-right: 0.75rem; white-space: nowrap; }
+        .registration-table td, .registration-table th { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .registration-table td:first-child, .registration-table th:first-child { padding-left: 0.75rem; }
+        .registration-table td:last-child, .registration-table th:last-child { padding-right: 0.75rem; }
+        .footer-brand { font-size: 2.8rem !important; }
+    }
+    @media (min-width: 641px) and (max-width: 768px) {
+        .footer-brand { font-size: 4rem !important; }
+    }
+    @media (min-width: 769px) and (max-width: 1024px) {
+        .footer-brand { font-size: 6rem !important; }
+    }
+    @media (min-width: 1025px) {
+        .footer-brand { font-size: 7rem !important; }
+    }
+    button, .slide-dot { cursor: pointer; touch-action: manipulation; }
+    .registration-table th, .registration-table td { white-space: nowrap; }
+    @media (max-width: 500px) {
+        .registration-table th, .registration-table td { font-size: 0.75rem; }
+        .hero-content .mt-5 .flex { justify-content: center; }
+        .badge-pulse + h2 { font-size: 1.2rem; }
+    }
+</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
+
+<header class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-primary/20 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16 gap-2">
+<a href="index.html" class="flex items-center gap-1 sm:gap-2 shrink-0 hover:opacity-90 transition-opacity" style="text-decoration: none;">
+<span class="material-symbols-outlined tracking-tight text-slate-900 dark:text-slate-100 text-2xl sm:text-3xl">account_balance</span>
+<span class="text-sm sm:text-base md:text-xl font-bold tracking-tight bg-gradient-to-r from-primary via-yellow-400 to-primary bg-clip-text text-transparent drop-shadow-lg whitespace-nowrap">SAXOINVESTMENT</span>
+</a>
+<div class="flex items-center gap-2 sm:gap-3 shrink-0">
+    <!-- SMART BUTTON: Changes based on login state -->
+    <a id="dynamic-action-btn" href="#" class="px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold bg-primary text-background-dark rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/30 whitespace-nowrap flex items-center gap-1">
+        <span id="btn-icon" class="material-symbols-outlined text-sm md:text-base">login</span>
+        <span id="btn-text">Start Investing</span>
+    </a>
+</div>
+</div>
+</div>
+</header>
+
+<main>
+<!-- Hero Section with Mobile Optimized -->
+<section class="hero-section relative min-h-[85vh] lg:min-h-[90vh] w-full flex items-center overflow-hidden">
+    <div class="absolute inset-0 w-full h-full z-0">
+        <img class="bg-slide active" alt="Trading dashboard" src="https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=1200&h=800&fit=crop&auto=format" loading="eager"/>
+        <img class="bg-slide" alt="Stock market graph" src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&h=800&fit=crop&auto=format"/>
+        <img class="bg-slide" alt="Forex trading" src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1200&h=800&fit=crop&auto=format"/>
+        <img class="bg-slide" alt="Real estate" src="https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=1200&h=800&fit=crop&auto=format"/>
+        <img class="bg-slide" alt="Gold commodities" src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1200&h=800&fit=crop&auto=format"/>
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background-dark to-transparent z-10"></div>
+    <div class="absolute top-16 md:top-24 right-2 md:right-6 z-30 hidden sm:flex items-center gap-1.5 md:gap-2 bg-black/50 backdrop-blur-md rounded-full px-2 py-1 md:px-4 md:py-2 border border-primary/50 shadow-xl">
+        <span class="relative flex h-2 w-2 md:h-3 md:w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span><span class="relative inline-flex rounded-full h-full w-full bg-primary"></span></span>
+        <span class="text-[9px] md:text-xs lg:text-sm font-semibold text-primary tracking-wide whitespace-nowrap">LIVE MARKET DATA</span>
+    </div>
+    <div class="hero-content relative z-20 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-12 md:py-20 w-full">
+        <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+            <div class="flex-1 text-center lg:text-left space-y-5 animate-[slideUp_0.6s_ease-out]">
+                <div class="inline-flex items-center gap-2 bg-primary/30 backdrop-blur-md rounded-full px-3 py-1 text-xs md:text-sm font-semibold text-primary border border-primary/40 mx-auto lg:mx-0 w-fit shadow-lg">
+                    <span class="material-symbols-outlined text-sm md:text-base">trending_up</span>
+                    <span>Next-gen multi-asset</span>
+                </div>
+                <h1 class="hero-title text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-black leading-tight tracking-tight drop-shadow-2xl">Invest in Everything.<br/><span class="text-primary relative inline-block">One Platform.<svg class="absolute -bottom-2 left-0 w-full h-1 text-primary/60" viewBox="0 0 200 8" fill="none"><path d="M0 4L200 4" stroke="currentColor" stroke-width="3" stroke-dasharray="8 8"/></svg></span></h1>
+                <p class="hero-subtitle text-sm md:text-base lg:text-xl text-slate-100 max-w-xl mx-auto lg:mx-0 drop-shadow-md bg-black/20 inline-block px-3 py-1.5 rounded-xl">Trade stocks, crypto, forex, bonds, real estate from one dashboard.</p>
+                <div class="flex flex-wrap justify-center lg:justify-start gap-3 pt-2">
+                    <!-- Hero CTA button also smart (same logic) -->
+                    <a href="#" id="hero-cta-btn" class="px-4 py-2.5 md:px-6 md:py-3 bg-primary text-background-dark font-bold rounded-xl text-sm md:text-base hover:scale-105 transition-transform shadow-xl shadow-primary/40 flex items-center gap-2">Start Investing <span class="material-symbols-outlined text-base md:text-xl">arrow_forward</span></a>
+                    <a href="market.html" class="px-4 py-2.5 md:px-6 md:py-3 border-2 border-primary/60 text-white font-bold rounded-xl text-sm md:text-base hover:bg-primary/20 transition-colors backdrop-blur-sm flex items-center gap-2" style="text-decoration: none;">
+                        View Markets 
+                        <span class="material-symbols-outlined text-base md:text-xl">insights</span>
+                      </a>
+                </div>
+            </div>
+            <div class="flex-1 hidden lg:block max-w-sm w-full">
+                <div class="bg-black/30 backdrop-blur-xl rounded-2xl border border-primary/30 p-5 shadow-2xl">
+                    <div class="flex items-center gap-3 border-b border-white/20 pb-3 mb-3"><span class="material-symbols-outlined text-primary text-2xl">bar_chart</span><span class="font-bold text-sm uppercase tracking-wider">Global Pulse</span></div>
+                    <div class="space-y-2 text-sm" id="pulse-stats">
+                        <div class="flex justify-between"><span>S&P 500</span><span id="pulse-sp500" class="font-bold text-emerald-400">+0.84%</span></div>
+                        <div class="flex justify-between"><span>NASDAQ</span><span id="pulse-nasdaq" class="font-bold text-emerald-400">+1.22%</span></div>
+                        <div class="flex justify-between"><span>Gold (XAU)</span><span id="pulse-gold" class="font-bold text-emerald-400">+0.67%</span></div>
+                        <div class="flex justify-between"><span>BTC/USD</span><span id="pulse-btc" class="font-bold text-primary">+2.45%</span></div>
+                        <div class="flex justify-between"><span>EUR/USD</span><span id="pulse-eur" class="font-bold text-rose-400">-0.12%</span></div>
+                    </div>
+                    <div class="mt-4 pt-2 text-center text-[11px] text-slate-300 border-t border-white/20">Live streaming • Real-time sim</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="absolute bottom-4 left-0 right-0 z-30 flex justify-center gap-2 pb-1">
+        <button class="slide-dot w-2 h-2 rounded-full bg-white/60 hover:bg-primary/80 transition-all duration-300" data-index="0"></button>
+        <button class="slide-dot w-2 h-2 rounded-full bg-white/60 hover:bg-primary/80 transition-all duration-300" data-index="1"></button>
+        <button class="slide-dot w-2 h-2 rounded-full bg-white/60 hover:bg-primary/80 transition-all duration-300" data-index="2"></button>
+        <button class="slide-dot w-2 h-2 rounded-full bg-white/60 hover:bg-primary/80 transition-all duration-300" data-index="3"></button>
+        <button class="slide-dot w-2 h-2 rounded-full bg-white/60 hover:bg-primary/80 transition-all duration-300" data-index="4"></button>
+    </div>
+</section>
+
+<!-- LIVE REGISTRATIONS TICKER - fully responsive -->
+<section class="py-8 md:py-12 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 border-y border-primary/20">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div class="flex items-center gap-2 flex-wrap"><div class="badge-pulse w-2.5 h-2.5 bg-primary rounded-full"></div><h2 class="text-lg md:text-2xl font-bold flex items-center gap-2 flex-wrap">Live Investor Activity <span class="text-xs font-normal text-primary/80 bg-primary/10 px-2 py-0.5 rounded-full">Real-time</span></h2></div>
+        <div class="text-xs md:text-sm text-slate-400">Join <span id="total-counter" class="font-bold text-primary text-base md:text-xl">2,147,283</span> investors worldwide</div>
+    </div>
+    <div class="bg-black/20 dark:bg-white/5 rounded-xl border border-primary/20 overflow-hidden backdrop-blur-sm">
+        <div class="overflow-x-auto scrollable-x">
+            <table class="min-w-[500px] w-full registration-table">
+                <thead class="bg-primary/10 border-b border-primary/20"><tr><th class="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-semibold uppercase">Investor</th><th class="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-semibold uppercase">Country</th><th class="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-semibold uppercase hidden sm:table-cell">Joined</th><th class="px-3 md:px-6 py-2 md:py-3 text-left text-xs font-semibold uppercase">Portfolio</th></tr>
+                </thead>
+                <tbody id="registrations-tbody" class="divide-y divide-primary/10"></tbody>
+            </table>
+        </div>
+        <div class="p-2 md:p-3 text-right text-[10px] md:text-xs text-primary/60 border-t border-primary/10 flex flex-col sm:flex-row justify-between items-center gap-1"><span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs md:text-sm">sync</span> Live feed • New investors appear</span><span id="last-signup-time" class="font-mono text-[9px] md:text-[11px]">Just now</span></div>
+    </div>
+</div>
+</section>
+
+<!-- MARKET OVERVIEW (responsive table) -->
+<section class="py-12 md:py-20">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-3">
+<div><h2 class="text-xl md:text-3xl font-bold mb-2 flex items-center gap-2 flex-wrap">Market Overview <span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span></span><span class="text-[10px] md:text-xs font-mono bg-primary/20 text-primary px-2 py-0.5 rounded-full whitespace-nowrap">LIVE STREAM</span></h2><p class="text-slate-600 dark:text-slate-400 text-xs md:text-sm">Realistic market movements • variable intervals</p></div>
+</div>
+<div class="overflow-x-auto scrollable-x rounded-xl border border-slate-200 dark:border-primary/20 shadow-lg bg-white dark:bg-background-dark/40">
+<table class="min-w-[580px] md:min-w-full w-full text-left">
+<thead class="bg-slate-50 dark:bg-primary/10 border-b border-slate-200 dark:border-primary/20"><tr><th class="px-3 md:px-6 py-2 md:py-3 text-xs md:text-sm font-semibold">Asset</th><th class="px-3 md:px-6 py-2 md:py-3 text-xs md:text-sm font-semibold">Price</th><th class="px-3 md:px-6 py-2 md:py-3 text-xs md:text-sm font-semibold">24h Change</th><th class="px-3 md:px-6 py-2 md:py-3 text-xs md:text-sm font-semibold hidden md:table-cell">Volume/Cap</th><th class="px-3 md:px-6 py-2 md:py-3 text-xs md:text-sm font-semibold text-right">Action</th></tr>
+</thead>
+<tbody id="live-markets-tbody"></tbody>
+</table>
+<div class="p-2 text-right text-[10px] text-slate-400 border-t border-slate-200 dark:border-primary/10 bg-white/30 dark:bg-black/20 flex flex-wrap justify-between gap-1"><span id="last-update-timestamp">Waiting for tick...</span><span class="text-primary font-mono text-[9px] md:text-[11px]">Randomized intervals • sim</span></div>
+</div>
+</div>
+</section>
+
+<!-- Features grid responsive -->
+<section class="py-12 md:py-20 bg-slate-50 dark:bg-primary/5">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
+<div class="p-5 md:p-8 rounded-2xl bg-white dark:bg-background-dark border border-slate-200 dark:border-primary/20"><div class="w-10 h-10 md:w-12 md:h-12 bg-primary/20 rounded-full flex items-center justify-center text-primary mb-3"><span class="material-symbols-outlined text-xl md:text-2xl">public</span></div><h3 class="text-lg md:text-xl font-bold mb-1">Global Access</h3><p class="text-slate-600 dark:text-slate-400 text-xs md:text-sm">Access 50+ international markets and trade thousands of assets.</p></div>
+<div class="p-5 md:p-8 rounded-2xl bg-white dark:bg-background-dark border border-slate-200 dark:border-primary/20"><div class="w-10 h-10 md:w-12 md:h-12 bg-primary/20 rounded-full flex items-center justify-center text-primary mb-3"><span class="material-symbols-outlined text-xl md:text-2xl">verified_user</span></div><h3 class="text-lg md:text-xl font-bold mb-1">Secure & Compliant</h3><p class="text-slate-600 dark:text-slate-400 text-xs md:text-sm">Fully regulated. Assets held in segregated accounts.</p></div>
+<div class="p-5 md:p-8 rounded-2xl bg-white dark:bg-background-dark border border-slate-200 dark:border-primary/20"><div class="w-10 h-10 md:w-12 md:h-12 bg-primary/20 rounded-full flex items-center justify-center text-primary mb-3"><span class="material-symbols-outlined text-xl md:text-2xl">account_balance</span></div><h3 class="text-lg md:text-xl font-bold mb-1">Low Fees</h3><p class="text-slate-600 dark:text-slate-400 text-xs md:text-sm">Industry-leading spreads, zero-commission on selected ETFs.</p></div>
+</div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="dark:border-primary/20 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-t-2 border-primary/30 pt-8 pb-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col items-center justify-center text-center space-y-3 mb-8">
+            <div class="flex flex-wrap items-center justify-center gap-1 md:gap-2 px-2">
+                <span class="footer-brand text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter bg-gradient-to-r from-primary via-yellow-400 to-primary bg-clip-text text-transparent drop-shadow-2xl break-words leading-tight flex flex-wrap justify-center">
+                    <span class="whitespace-nowrap sm:whitespace-normal">SAXO</span>
+                    <span class="whitespace-nowrap sm:whitespace-normal">INVESTMENT</span>
+                </span>
+            </div>
+            <div class="w-20 h-1 bg-primary/60 rounded-full"></div>
+            <p class="text-slate-400 max-w-xs sm:max-w-md text-xs sm:text-sm font-medium px-2">Your gateway to global markets — trusted by millions.</p>
+        </div>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-5 py-5 border-t border-white/10 border-b border-white/10 mb-5">
+            <div><h4 class="text-primary font-bold text-[11px] uppercase tracking-wider mb-2">Products</h4><ul class="space-y-1.5 text-[11px] text-slate-400"><li><a href="#" class="hover:text-primary transition">Stocks</a></li><li><a href="#" class="hover:text-primary transition">Options</a></li><li><a href="#" class="hover:text-primary transition">Crypto</a></li><li><a href="#" class="hover:text-primary transition">Margin</a></li></ul></div>
+            <div><h4 class="text-primary font-bold text-[11px] uppercase tracking-wider mb-2">Company</h4><ul class="space-y-1.5 text-[11px] text-slate-400"><li><a href="#" class="hover:text-primary transition">About</a></li><li><a href="#" class="hover:text-primary transition">Careers</a></li><li><a href="#" class="hover:text-primary transition">Press</a></li><li><a href="#" class="hover:text-primary transition">Blog</a></li></ul></div>
+            <div><h4 class="text-primary font-bold text-[11px] uppercase tracking-wider mb-2">Learn</h4><ul class="space-y-1.5 text-[11px] text-slate-400"><li><a href="#" class="hover:text-primary transition">Basics</a></li><li><a href="#" class="hover:text-primary transition">Market News</a></li><li><a href="#" class="hover:text-primary transition">Glossary</a></li><li><a href="#" class="hover:text-primary transition">Webinars</a></li></ul></div>
+            <div><h4 class="text-primary font-bold text-[11px] uppercase tracking-wider mb-2">Legal</h4><ul class="space-y-1.5 text-[11px] text-slate-400"><li><a href="#" class="hover:text-primary transition">Privacy</a></li><li><a href="#" class="hover:text-primary transition">Terms</a></li><li><a href="#" class="hover:text-primary transition">Disclosures</a></li><li><a href="#" class="hover:text-primary transition">Risk</a></li></ul></div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row justify-between items-center gap-3 text-[10px] text-slate-500 pt-2">
+            <p>© 2025 SAXOINVESTMENT. All rights reserved. Member FINRA/SIPC.</p>
+            <div class="flex gap-4"><a href="#" class="hover:text-primary transition"><span class="material-symbols-outlined text-sm">share</span></a><a href="#" class="hover:text-primary transition"><span class="material-symbols-outlined text-sm">language</span></a><a href="#" class="hover:text-primary transition"><span class="material-symbols-outlined text-sm">alternate_email</span></a></div>
+        </div>
+    </div>
+</footer>
+</main>
+
+<script>
+    // ============================================================
+    // MARKET & REGISTRATION SIMULATION (fully intact)
+    // ============================================================
+    const marketData = {
+        btc: { name: "Bitcoin (BTC)", symbol: "currency_bitcoin", price: 64231.50, change: 2.45, marketCap: "$1.2T", lastPrice: 64231.50 },
+        aapl: { name: "Apple Inc. (AAPL)", symbol: "ios", price: 189.43, change: 1.12, marketCap: "$2.9T", lastPrice: 189.43 },
+        eurusd: { name: "EUR/USD", symbol: "euro", price: 1.0845, change: -0.15, marketCap: "High", lastPrice: 1.0845 },
+        gold: { name: "Gold (XAU/USD)", symbol: "grid_goldenratio", price: 2156.20, change: 0.82, marketCap: "Active", lastPrice: 2156.20 }
+    };
+    function getRandomWalkPrice(base, assetType) {
+        let volatility = (Math.random() * 0.003) + 0.0005;
+        if (assetType === 'crypto') volatility = (Math.random() * 0.012) + 0.002;
+        if (assetType === 'forex') volatility = (Math.random() * 0.0006) + 0.0002;
+        if (assetType === 'stock') volatility = (Math.random() * 0.005) + 0.0008;
+        if (assetType === 'commodity') volatility = (Math.random() * 0.004) + 0.0006;
+        let delta = (Math.random() - 0.5) * volatility * base;
+        let newPrice = base + delta;
+        if (assetType === 'forex') return parseFloat(newPrice.toFixed(5));
+        return parseFloat(newPrice.toFixed(2));
+    }
+    function computeChangePercent(oldPrice, newPrice) { return parseFloat(((newPrice - oldPrice) / oldPrice * 100).toFixed(2)); }
+    let prevPrices = {};
+    function renderMarketTable() {
+        const tbody = document.getElementById('live-markets-tbody');
+        if (!tbody) return;
+        const assets = [marketData.btc, marketData.aapl, marketData.eurusd, marketData.gold];
+        tbody.innerHTML = '';
+        assets.forEach(asset => {
+            const changeClass = asset.change >= 0 ? 'price-up' : 'price-down';
+            const changeSign = asset.change >= 0 ? '+' : '';
+            const priceDisplay = asset.name === 'EUR/USD' ? asset.price.toFixed(5) : asset.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            const row = document.createElement('tr');
+            row.className = 'market-row hover:bg-primary/5 transition-colors';
+            const tradeUrl = localStorage.getItem('token') ? 'investmentdashboard.html' : 'join.html';
+            row.innerHTML = `<td class="px-3 md:px-6 py-2 md:py-3 flex items-center gap-1.5 md:gap-2"><span class="material-symbols-outlined text-primary text-base md:text-xl">${asset.symbol}</span><span class="font-bold text-xs md:text-sm whitespace-nowrap">${asset.name}</span></td><td class="px-3 md:px-6 py-2 md:py-3 font-medium price-cell tabular-nums text-xs md:text-sm">${priceDisplay}</td><td class="px-3 md:px-6 py-2 md:py-3 font-bold ${changeClass} text-xs md:text-sm"><span>${changeSign}${asset.change}%</span></td><td class="px-3 md:px-6 py-2 md:py-3 text-slate-500 text-xs hidden md:table-cell">${asset.marketCap}</td><td class="px-3 md:px-6 py-2 md:py-3 text-right"><a href="${tradeUrl}" class="inline-block px-2 md:px-3 py-1 bg-primary/20 text-primary rounded-lg font-bold text-[10px] md:text-xs hover:bg-primary/40 transition" style="text-decoration:none;">Trade</a></td>`;
+            tbody.appendChild(row);
+            const priceCell = row.querySelector('.price-cell');
+            if (prevPrices[asset.name] !== undefined && Math.abs(asset.price - prevPrices[asset.name]) > 0.0001) {
+                priceCell.classList.add(asset.change >= 0 ? 'flash-green' : 'flash-red');
+                setTimeout(() => priceCell.classList.remove('flash-green', 'flash-red'), 400);
+            }
+            prevPrices[asset.name] = asset.price;
+        });
+        document.getElementById('last-update-timestamp').innerHTML = `Last tick: ${new Date().toLocaleTimeString()} .${String(new Date().getMilliseconds()).padStart(3,'0')}`;
+    }
+    async function updateMarketTick() {
+        try {
+            const res = await fetch(`${window.location.origin}/api/watchlist`);
+            if (res.ok) {
+                const list = await res.json();
+                const btc = list.find(x => x.symbol === 'BTC');
+                if (btc) { marketData.btc.price = btc.price; marketData.btc.change = btc.changePercent; }
+                const aapl = list.find(x => x.symbol === 'AAPL');
+                if (aapl) { marketData.aapl.price = aapl.price; marketData.aapl.change = aapl.changePercent; }
+                const gold = list.find(x => x.symbol === 'GOLD');
+                if (gold) { marketData.gold.price = gold.price; marketData.gold.change = gold.changePercent; }
+            } else {
+                let oldBtc = marketData.btc.price, newBtc = getRandomWalkPrice(oldBtc, 'crypto');
+                marketData.btc.price = newBtc; marketData.btc.change = computeChangePercent(oldBtc, newBtc);
+                let oldAapl = marketData.aapl.price, newAapl = getRandomWalkPrice(oldAapl, 'stock');
+                marketData.aapl.price = newAapl; marketData.aapl.change = computeChangePercent(oldAapl, newAapl);
+                let oldGold = marketData.gold.price, newGold = getRandomWalkPrice(oldGold, 'commodity');
+                marketData.gold.price = newGold; marketData.gold.change = computeChangePercent(oldGold, newGold);
+            }
+        } catch (err) {
+            let oldBtc = marketData.btc.price, newBtc = getRandomWalkPrice(oldBtc, 'crypto');
+            marketData.btc.price = newBtc; marketData.btc.change = computeChangePercent(oldBtc, newBtc);
+            let oldAapl = marketData.aapl.price, newAapl = getRandomWalkPrice(oldAapl, 'stock');
+            marketData.aapl.price = newAapl; marketData.aapl.change = computeChangePercent(oldAapl, newAapl);
+            let oldGold = marketData.gold.price, newGold = getRandomWalkPrice(oldGold, 'commodity');
+            marketData.gold.price = newGold; marketData.gold.change = computeChangePercent(oldGold, newGold);
+        }
+        let oldEur = marketData.eurusd.price, newEur = getRandomWalkPrice(oldEur, 'forex');
+        marketData.eurusd.price = newEur; marketData.eurusd.change = computeChangePercent(oldEur, newEur);
+        renderMarketTable();
+        updatePulseWidget();
+        scheduleNextMarketTick();
+    }
+    function scheduleNextMarketTick() { setTimeout(() => updateMarketTick(), Math.random() * 5500 + 1300); }
+    function updatePulseWidget() {
+        if(document.getElementById('pulse-sp500')) document.getElementById('pulse-sp500').innerHTML = (Math.random()*1.2 -0.2).toFixed(2)+'%';
+        if(document.getElementById('pulse-nasdaq')) document.getElementById('pulse-nasdaq').innerHTML = (Math.random()*1.5 -0.1).toFixed(2)+'%';
+        if(document.getElementById('pulse-gold')) document.getElementById('pulse-gold').innerHTML = (marketData.gold.change>=0?`+${marketData.gold.change}`:`${marketData.gold.change}`)+'%';
+        if(document.getElementById('pulse-btc')) document.getElementById('pulse-btc').innerHTML = (marketData.btc.change>=0?`+${marketData.btc.change}`:`${marketData.btc.change}`)+'%';
+        if(document.getElementById('pulse-eur')) document.getElementById('pulse-eur').innerHTML = (marketData.eurusd.change>=0?`+${marketData.eurusd.change}`:`${marketData.eurusd.change}`)+'%';
+    }
+    // registrations simulation
+    const countryPool = ["🇺🇸 USA", "🇬🇧 UK", "🇩🇪 Germany", "🇫🇷 France", "🇨🇦 Canada", "🇦🇺 Australia", "🇯🇵 Japan", "🇸🇬 Singapore", "🇧🇷 Brazil", "🇮🇳 India"];
+    const firstNames = ["Emma","Liam","Sophia","Noah","Olivia","Lucas","Ava","Ethan"];
+    const lastNames = ["Chen","O'Connor","Rossi","Kim","Smith","Müller","Johnson","Williams"];
+    let registrations = [
+        { name: "Michael Zhang", country: "🇸🇬 Singapore", time: "2 min ago", portfolio: "$247.5k" },
+        { name: "Sarah Johnson", country: "🇺🇸 USA", time: "7 min ago", portfolio: "$189.2k" }
+    ];
+    let totalInvestors = 2147283;
+    function renderRegistrations() {
+        const tbody = document.getElementById('registrations-tbody');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+        registrations.forEach((reg, idx) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td class="px-3 md:px-6 py-2 md:py-3 font-medium"><div class="flex items-center gap-1.5 md:gap-2"><div class="w-6 h-6 md:w-7 md:h-7 rounded-full bg-primary/30 flex items-center justify-center text-[10px] md:text-xs font-bold">${reg.name.charAt(0)}</div><span class="text-xs md:text-sm">${reg.name}</span></div></td><td class="px-3 md:px-6 py-2 md:py-3 text-xs md:text-sm">${reg.country}</td><td class="px-3 md:px-6 py-2 md:py-3 text-primary/80 text-[10px] md:text-xs hidden sm:table-cell">${reg.time}</td><td class="px-3 md:px-6 py-2 md:py-3 font-mono font-bold text-primary text-xs md:text-sm">${reg.portfolio}</td>`;
+            tbody.appendChild(row);
+            if (idx === 0 && window.newRegFlag) row.classList.add('new');
+        });
+    }
+    function addNewRegistration() {
+        const randomName = firstNames[Math.floor(Math.random() * firstNames.length)] + " " + lastNames[Math.floor(Math.random() * lastNames.length)];
+        const randomCountry = countryPool[Math.floor(Math.random() * countryPool.length)];
+        const randomPort = '$' + (Math.floor(Math.random() * 350) + 15).toFixed(1) + 'k';
+        registrations.unshift({ name: randomName, country: randomCountry, time: "just now", portfolio: randomPort });
+        if (registrations.length > 5) registrations.pop();
+        totalInvestors += Math.floor(Math.random() * 3) + 1;
+        document.getElementById('total-counter').innerText = totalInvestors.toLocaleString();
+        document.getElementById('last-signup-time').innerHTML = `⭐ New member joined ${new Date().toLocaleTimeString()}`;
+        window.newRegFlag = true;
+        for(let i=1; i<registrations.length; i++) { registrations[i].time = i===1?"1 min ago":i===2?"3 min ago":"8 min ago"; }
+        renderRegistrations();
+        setTimeout(() => { window.newRegFlag = false; }, 500);
+    }
+    function scheduleRegistration() { setTimeout(() => { addNewRegistration(); scheduleRegistration(); }, Math.random() * 10000 + 4500); }
+    renderMarketTable(); renderRegistrations(); scheduleNextMarketTick(); scheduleRegistration(); updatePulseWidget();
+    
+    // Background slideshow
+    (function() {
+        const slides = document.querySelectorAll('.bg-slide');
+        const dots = document.querySelectorAll('.slide-dot');
+        let currentIdx = 0, intervalId;
+        function activateSlide(index) { slides.forEach((s,i)=>s.classList.toggle('active', i===index)); dots.forEach((d,i)=>{ if(i===index){ d.classList.add('active'); d.style.width='2rem'; d.style.backgroundColor='#d4af35'; } else { d.classList.remove('active'); d.style.width='0.5rem'; d.style.backgroundColor='rgba(255,255,255,0.6)'; } }); currentIdx = index; }
+        function nextSlide() { activateSlide((currentIdx + 1) % slides.length); }
+        function startAutoRotate() { if(intervalId) clearInterval(intervalId); intervalId = setInterval(nextSlide, 6000); }
+        dots.forEach((dot, idx) => dot.addEventListener('click', () => { if(intervalId) clearInterval(intervalId); activateSlide(idx); startAutoRotate(); }));
+        startAutoRotate();
+    })();
+
+    // ======================= SMART BUTTON: Login State Detection (No Popup) =======================
+    function updateButtonForLoginState() {
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const btn = document.getElementById('dynamic-action-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnIcon = document.getElementById('btn-icon');
+        const heroCta = document.getElementById('hero-cta-btn');
+        
+        if (token && user && user.email) {
+            // User IS logged in → Show "Dashboard" button → redirect to investmentdashboard.html
+            btnText.innerText = 'Dashboard';
+            btnIcon.innerText = 'dashboard';
+            btn.href = 'investmentdashboard.html';
+            if (heroCta) {
+                heroCta.innerText = 'Go to Dashboard';
+                heroCta.href = 'investmentdashboard.html';
+                const heroArrow = heroCta.querySelector('.material-symbols-outlined');
+                if (heroArrow) heroArrow.innerText = 'dashboard';
+            }
+        } else {
+            // User is NOT logged in → Show "Start Investing" button → redirect to join.html
+            btnText.innerText = 'Start Investing';
+            btnIcon.innerText = 'login';
+            btn.href = 'join.html';
+            if (heroCta) {
+                heroCta.innerText = 'Start Investing';
+                heroCta.href = 'join.html';
+                const heroArrow = heroCta.querySelector('.material-symbols-outlined');
+                if (heroArrow) heroArrow.innerText = 'arrow_forward';
+            }
+        }
+    }
+    
+    // Run on page load
+    updateButtonForLoginState();
+    
+    // Optional: Listen for storage changes (in case user logs in/out in another tab)
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'token' || e.key === 'user') {
+            updateButtonForLoginState();
+        }
+    });
+</script>
+</body>
+</html>

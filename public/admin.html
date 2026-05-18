@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>SAXOINVESTMENT | Admin Operations</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d4af35",
+                        "primary-dark": "#b89c2e",
+                        "background-dark": "#12110a",
+                        "navy-muted": "#1c1a11",
+                        "navy-deep": "#080704",
+                        "surface-dark": "#1c1a11",
+                        "border-dark": "#2d2a1b",
+                        "success": "#10b981",
+                        "danger": "#ef4444",
+                        "warning": "#f59e0b",
+                        "info": "#3b82f6"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #12110a;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2d2a1b;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #d4af35;
+        }
+        .toast-notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 10001;
+            transition: all 0.3s ease;
+        }
+        .loading-spinner {
+            border: 2px solid rgba(212, 175, 53, 0.2);
+            border-top-color: #d4af35;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .table-row:hover {
+            background: rgba(212, 175, 53, 0.05);
+        }
+        .image-preview {
+            width: 60px;
+            height: 48px;
+            object-fit: cover;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        .image-preview:hover {
+            transform: scale(1.05);
+        }
+        .nav-active {
+            background: rgba(212, 175, 53, 0.15);
+            border-left: 3px solid #d4af35;
+            color: #d4af35 !important;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #d4af35, #b89c2e);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(212, 175, 53, 0.3);
+        }
+        .status-pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.3); }
+        .status-verified { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.3); }
+        .status-credited { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-color: rgba(59, 130, 246, 0.3); }
+        .status-rejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+        .status-completed { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.3); }
+        .status-failed { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+        .status-approved { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.3); }
+        .details-card { background: rgba(0, 0, 0, 0.3); border-radius: 8px; padding: 12px; margin-top: 8px; }
+        .details-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 12px; }
+        .details-label { color: #94a3b8; font-weight: 500; }
+        .details-value { color: #e2e8f0; word-break: break-all; }
+        .upgrade-badge { background: linear-gradient(135deg, #d4af35, #b89c2e); color: #080704; font-weight: bold; }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 font-display">
+
+    <!-- Login Modal (initially visible) -->
+    <div id="loginModal" class="modal-backdrop">
+        <div class="bg-navy-muted border border-border-dark rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-primary/30">
+                    <span class="material-symbols-outlined text-primary text-3xl font-bold">admin_panel_settings</span>
+                </div>
+                <h2 class="text-2xl font-extrabold text-white">Admin Operations</h2>
+                <p class="text-slate-400 text-sm mt-1">Authorized access points only</p>
+            </div>
+            <form id="adminLoginForm">
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-300 mb-2 uppercase">Core Operator Email</label>
+                    <input type="email" id="adminEmail" required
+                        class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white"
+                        placeholder="operator@saxoinvestment.com" value="admin@globalvest.com">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-slate-300 mb-2 uppercase">Verification Password</label>
+                    <input type="password" id="adminPassword" required
+                        class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white"
+                        placeholder="••••••••" value="admin123">
+                </div>
+                <button type="submit"
+                    class="w-full btn-primary text-navy-deep font-extrabold py-3.5 rounded-xl shadow-lg shadow-primary/20 transition-all uppercase tracking-wider text-sm flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined font-bold text-lg">login</span>
+                    Authenticate Console
+                </button>
+            </form>
+            <p class="text-xs text-center text-slate-500 mt-4">Demo credentials: admin@globalvest.com / admin123</p>
+        </div>
+    </div>
+
+    <!-- Main Admin Dashboard (hidden until login) -->
+    <div id="adminDashboard" class="hidden min-h-screen flex flex-col md:flex-row">
+        <!-- Sidebar -->
+        <div class="w-full md:w-64 bg-navy-deep border-b md:border-b-0 md:border-r border-border-dark flex flex-col shrink-0">
+            <div class="p-6 border-b border-border-dark flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="size-8 bg-primary rounded flex items-center justify-center text-navy-deep font-extrabold">
+                        <span class="material-symbols-outlined font-bold text-xl">account_balance</span>
+                    </div>
+                    <div>
+                        <h1 class="text-base font-extrabold tracking-tight text-white leading-none">SAXO<span class="text-primary font-light">INVEST</span></h1>
+                        <p class="text-[9px] text-primary/60 font-bold uppercase mt-1">Console</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="p-4 flex-1 space-y-1">
+                <div class="nav-item cursor-pointer p-3 rounded-xl flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-navy-muted transition-all text-xs font-bold uppercase tracking-wider nav-active"
+                    data-tab="deposits-pending">
+                    <span class="material-symbols-outlined text-lg">pending_actions</span>
+                    <span>Pending Deposits</span>
+                    <span id="pendingCount" class="ml-auto bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                </div>
+                <div class="nav-item cursor-pointer p-3 rounded-xl flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-navy-muted transition-all text-xs font-bold uppercase tracking-wider"
+                    data-tab="deposits-verified">
+                    <span class="material-symbols-outlined text-lg">verified</span>
+                    <span>Verified Deposits</span>
+                </div>
+                <div class="nav-item cursor-pointer p-3 rounded-xl flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-navy-muted transition-all text-xs font-bold uppercase tracking-wider"
+                    data-tab="withdrawals">
+                    <span class="material-symbols-outlined text-lg">receipt_long</span>
+                    <span>Withdrawals</span>
+                    <span id="withdrawalCount" class="ml-auto bg-warning/20 text-warning text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                </div>
+                <div class="nav-item cursor-pointer p-3 rounded-xl flex items-center gap-3 text-slate-400 hover:text-slate-200 hover:bg-navy-muted transition-all text-xs font-bold uppercase tracking-wider"
+                    data-tab="upgrades">
+                    <span class="material-symbols-outlined text-lg">stars</span>
+                    <span>Upgrades</span>
+                    <span id="upgradeCount" class="ml-auto bg-info/20 text-info text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                </div>
+                <div class="border-t border-border-dark my-4 pt-4"></div>
+                <div class="nav-item cursor-pointer p-3 rounded-xl flex items-center gap-3 text-slate-400 hover:text-danger hover:bg-danger/10 transition-all text-xs font-bold uppercase tracking-wider"
+                    id="logoutBtn">
+                    <span class="material-symbols-outlined text-lg">logout</span>
+                    <span>Logout</span>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-6 md:p-10 overflow-y-auto">
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-extrabold text-white" id="pageTitle">Pending Deposits</h1>
+                    <p class="text-primary/60 text-xs md:text-sm mt-1">Manage and verify user deposit requests</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="bg-navy-muted border border-border-dark rounded-xl px-4 py-2 flex items-center gap-2 text-xs md:text-sm text-slate-300 font-semibold">
+                        <span class="material-symbols-outlined text-primary text-base">admin_panel_settings</span>
+                        <span id="adminName">Admin Operator</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
+                <div class="bg-navy-muted border border-border-dark rounded-xl p-5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Pending Deposits</p>
+                            <p class="text-xl md:text-2xl font-black text-white mt-1" id="statPending">0</p>
+                        </div>
+                        <span class="material-symbols-outlined text-3xl text-warning">pending</span>
+                    </div>
+                </div>
+                <div class="bg-navy-muted border border-border-dark rounded-xl p-5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Pending Withdrawals</p>
+                            <p class="text-xl md:text-2xl font-black text-white mt-1" id="statPendingWithdrawals">0</p>
+                        </div>
+                        <span class="material-symbols-outlined text-3xl text-warning">receipt_long</span>
+                    </div>
+                </div>
+                <div class="bg-navy-muted border border-border-dark rounded-xl p-5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Pending Upgrades</p>
+                            <p class="text-xl md:text-2xl font-black text-white mt-1" id="statPendingUpgrades">0</p>
+                        </div>
+                        <span class="material-symbols-outlined text-3xl text-info">stars</span>
+                    </div>
+                </div>
+                <div class="bg-navy-muted border border-border-dark rounded-xl p-5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Deposits</p>
+                            <p class="text-xl md:text-2xl font-black text-success mt-1" id="statTotalDeposits">$0</p>
+                        </div>
+                        <span class="material-symbols-outlined text-3xl text-success">trending_up</span>
+                    </div>
+                </div>
+                <div class="bg-navy-muted border border-border-dark rounded-xl p-5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Withdrawals</p>
+                            <p class="text-xl md:text-2xl font-black text-danger mt-1" id="statTotalWithdrawals">$0</p>
+                        </div>
+                        <span class="material-symbols-outlined text-3xl text-danger">trending_down</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deposits Table -->
+            <div id="deposits-container" class="bg-navy-muted border border-border-dark rounded-xl overflow-hidden shadow-xl">
+                <div class="p-4 border-b border-border-dark flex flex-wrap justify-between items-center gap-3">
+                    <h3 class="font-extrabold text-white">Deposit Ledger Requests</h3>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="searchInput" placeholder="Search reference or user..."
+                            class="bg-navy-deep border border-border-dark rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-primary text-slate-200">
+                        <button id="refreshBtn" class="bg-primary/10 border border-primary/20 hover:bg-primary/20 text-primary p-1.5 rounded-lg transition-colors flex items-center justify-center">
+                            <span class="material-symbols-outlined text-sm md:text-base">refresh</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full min-w-[800px]">
+                        <thead class="bg-navy-deep text-left">
+                            <tr>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Reference ID</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">User Details</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Method</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Proof Image</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="depositsTableBody" class="divide-y divide-border-dark">
+                            <tr>
+                                <td colspan="8" class="text-center py-8">
+                                    <div class="loading-spinner mx-auto"></div>
+                                    <p class="mt-2 text-xs text-slate-400">Loading deposits payload...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-4 border-t border-border-dark flex justify-between items-center bg-navy-deep">
+                    <div class="text-xs text-slate-400">
+                        Showing <span id="showingStart">0</span> - <span id="showingEnd">0</span> of <span id="totalCount">0</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="prevPage" class="px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary text-xs font-bold rounded-lg hover:bg-primary/20 disabled:opacity-50">Previous</button>
+                        <span id="pageInfo" class="px-3 py-1.5 text-xs font-bold text-slate-300">Page 1</span>
+                        <button id="nextPage" class="px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary text-xs font-bold rounded-lg hover:bg-primary/20 disabled:opacity-50">Next</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Withdrawals Table -->
+            <div id="withdrawals-container" class="bg-navy-muted border border-border-dark rounded-xl overflow-hidden shadow-xl" style="display: none;">
+                <div class="p-4 border-b border-border-dark flex flex-wrap justify-between items-center gap-3">
+                    <h3 class="font-extrabold text-white">Withdrawal Requests</h3>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="withdrawalSearchInput" placeholder="Search user..."
+                            class="bg-navy-deep border border-border-dark rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-primary text-slate-200">
+                        <button id="refreshWithdrawalsBtn" class="bg-primary/10 border border-primary/20 hover:bg-primary/20 text-primary p-1.5 rounded-lg transition-colors flex items-center justify-center">
+                            <span class="material-symbols-outlined text-sm md:text-base">refresh</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full min-w-[800px]">
+                        <thead class="bg-navy-deep text-left">
+                            <tr>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">User Details</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Method</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Details Payload</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="withdrawalsTableBody" class="divide-y divide-border-dark">
+                            <tr>
+                                <td colspan="7" class="text-center py-8">
+                                    <div class="loading-spinner mx-auto"></div>
+                                    <p class="mt-2 text-xs text-slate-400">Loading withdrawals payload...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-4 border-t border-border-dark flex justify-between items-center bg-navy-deep">
+                    <div class="text-xs text-slate-400">
+                        Showing <span id="withdrawalShowingStart">0</span> - <span id="withdrawalShowingEnd">0</span> of <span id="withdrawalTotalCount">0</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="withdrawalPrevPage" class="px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary text-xs font-bold rounded-lg hover:bg-primary/20 disabled:opacity-50">Previous</button>
+                        <span id="withdrawalPageInfo" class="px-3 py-1.5 text-xs font-bold text-slate-300">Page 1</span>
+                        <button id="withdrawalNextPage" class="px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary text-xs font-bold rounded-lg hover:bg-primary/20 disabled:opacity-50">Next</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upgrades Table -->
+            <div id="upgrades-container" class="bg-navy-muted border border-border-dark rounded-xl overflow-hidden shadow-xl" style="display: none;">
+                <div class="p-4 border-b border-border-dark flex flex-wrap justify-between items-center gap-3">
+                    <h3 class="font-extrabold text-white">Membership Upgrade Requests</h3>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="upgradeSearchInput" placeholder="Search user..."
+                            class="bg-navy-deep border border-border-dark rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-primary text-slate-200">
+                        <button id="refreshUpgradesBtn" class="bg-primary/10 border border-primary/20 hover:bg-primary/20 text-primary p-1.5 rounded-lg transition-colors flex items-center justify-center">
+                            <span class="material-symbols-outlined text-sm md:text-base">refresh</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full min-w-[900px]">
+                        <thead class="bg-navy-deep text-left">
+                            <tr>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">User Details</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Current Tier</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Requested Tier</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Fee Cost</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Reason</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="upgradesTableBody" class="divide-y divide-border-dark">
+                            <tr>
+                                <td colspan="8" class="text-center py-8">
+                                    <div class="loading-spinner mx-auto"></div>
+                                    <p class="mt-2 text-xs text-slate-400">Loading upgrade requests payload...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-4 border-t border-border-dark flex justify-between items-center bg-navy-deep">
+                    <div class="text-xs text-slate-400">
+                        Showing <span id="upgradeShowingStart">0</span> - <span id="upgradeShowingEnd">0</span> of <span id="upgradeTotalCount">0</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="upgradePrevPage" class="px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary text-xs font-bold rounded-lg hover:bg-primary/20 disabled:opacity-50">Previous</button>
+                        <span id="upgradePageInfo" class="px-3 py-1.5 text-xs font-bold text-slate-300">Page 1</span>
+                        <button id="upgradeNextPage" class="px-3 py-1.5 bg-primary/10 border border-primary/20 text-primary text-xs font-bold rounded-lg hover:bg-primary/20 disabled:opacity-50">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div id="imagePreviewModal" class="modal-backdrop hidden" onclick="closeImagePreview()">
+        <div class="max-w-4xl max-h-[90vh] p-4 relative" onclick="event.stopPropagation()">
+            <img id="previewImage" src="" alt="Proof" class="max-w-full max-h-[80vh] rounded-xl shadow-2xl border border-border-dark">
+            <button onclick="closeImagePreview()" class="absolute -top-12 -right-4 text-white hover:text-primary transition-all text-xl font-bold bg-navy-deep size-10 rounded-full flex items-center justify-center border border-border-dark">✕</button>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div id="detailsModal" class="modal-backdrop hidden" onclick="closeDetailsModal()">
+        <div class="bg-navy-muted border border-border-dark rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4 border-b border-border-dark pb-3">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">payments</span>
+                    Withdrawal Settlement Payload
+                </h3>
+                <button onclick="closeDetailsModal()" class="text-slate-400 hover:text-primary transition-all">✕</button>
+            </div>
+            <div id="detailsModalContent"></div>
+        </div>
+    </div>
+
+    <!-- Upgrade Details Modal -->
+    <div id="upgradeDetailsModal" class="modal-backdrop hidden" onclick="closeUpgradeDetailsModal()">
+        <div class="bg-navy-muted border border-border-dark rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4 border-b border-border-dark pb-3">
+                <h3 class="text-lg font-bold flex items-center gap-2 text-white">
+                    <span class="material-symbols-outlined text-primary">stars</span>
+                    Upgrade Request Details
+                </h3>
+                <button onclick="closeUpgradeDetailsModal()" class="text-slate-400 hover:text-primary transition-all">✕</button>
+            </div>
+            <div id="upgradeDetailsModalContent"></div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast" class="toast-notification bg-navy-deep border border-primary/30 rounded-xl px-4 py-3 shadow-xl flex items-center gap-3 hidden">
+        <span class="material-symbols-outlined text-primary">info</span>
+        <span id="toastMessage" class="text-xs md:text-sm text-slate-200"></span>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin + '/api';
+        const STATIC_BASE = window.location.origin;
+        let currentToken = null;
+        let currentTab = 'deposits-pending';
+        let currentPage = 1;
+        let deposits = [];
+        let withdrawals = [];
+        let upgradeRequests = [];
+        let filteredDeposits = [];
+        let filteredWithdrawals = [];
+        let filteredUpgrades = [];
+        let withdrawalPage = 1;
+        let upgradePage = 1;
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            toastMsg.innerText = message;
+            toast.classList.remove('hidden');
+            if (isError) {
+                toast.style.borderColor = '#ef4444';
+                toast.querySelector('.material-symbols-outlined').style.color = '#ef4444';
+            } else {
+                toast.style.borderColor = '#d4af35';
+                toast.querySelector('.material-symbols-outlined').style.color = '#d4af35';
+            }
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 4000);
+        }
+
+        function getImageUrl(proofImageUrl) {
+            if (!proofImageUrl) return null;
+            if (proofImageUrl.startsWith('http')) return proofImageUrl;
+            let cleanPath = proofImageUrl;
+            if (cleanPath.startsWith('/api')) cleanPath = cleanPath.substring(4);
+            if (!cleanPath.startsWith('/uploads')) cleanPath = `/uploads/proofs/${cleanPath.replace(/^\/+/, '')}`;
+            return `${STATIC_BASE}${cleanPath}`;
+        }
+
+        function showImagePreview(imageUrl) {
+            document.getElementById('previewImage').src = imageUrl;
+            document.getElementById('imagePreviewModal').classList.remove('hidden');
+        }
+
+        function closeImagePreview() {
+            document.getElementById('imagePreviewModal').classList.add('hidden');
+        }
+
+        function showDetailsModal(details) {
+            const container = document.getElementById('detailsModalContent');
+            let html = '<div class="details-grid bg-navy-deep p-4 rounded-xl border border-border-dark space-y-2 flex flex-col">';
+
+            for (const [key, value] of Object.entries(details)) {
+                if (value && typeof value === 'object') {
+                    html += `<div class="flex flex-col border-b border-border-dark pb-2 last:border-b-0">
+                                <span class="text-[10px] uppercase font-bold text-slate-500">${key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                <span class="text-sm font-semibold text-slate-200 mt-1">${JSON.stringify(value)}</span>
+                             </div>`;
+                } else if (value) {
+                    html += `<div class="flex flex-col border-b border-border-dark pb-2 last:border-b-0">
+                                <span class="text-[10px] uppercase font-bold text-slate-500">${key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                <span class="text-sm font-semibold text-slate-200 mt-1">${value}</span>
+                             </div>`;
+                }
+            }
+            html += '</div>';
+            container.innerHTML = html;
+            document.getElementById('detailsModal').classList.remove('hidden');
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').classList.add('hidden');
+        }
+
+        function showUpgradeDetails(upgrade) {
+            const container = document.getElementById('upgradeDetailsModalContent');
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="details-card border border-border-dark bg-navy-deep p-5 rounded-xl">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs md:text-sm">
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Request ID:</span>
+                                <span class="font-mono text-slate-200">${upgrade._id}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-500 block mb-1">User Name:</span>
+                                <span class="text-slate-200 font-semibold">${upgrade.userName || 'N/A'}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-500 block mb-1">User Email:</span>
+                                <span class="text-slate-200">${upgrade.userEmail || 'N/A'}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Current Tier:</span>
+                                <div><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/20 text-primary border border-primary/25">${upgrade.currentTier}</span></div>
+                            </div>
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Requested Tier:</span>
+                                <div><span class="px-2 py-0.5 rounded-full text-xs font-semibold upgrade-badge">${upgrade.requestedTier}</span></div>
+                            </div>
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Request Date:</span>
+                                <span class="text-slate-300 font-semibold">${new Date(upgrade.createdAt).toLocaleString()}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Status:</span>
+                                <div><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${`status-${upgrade.status}`} border">${upgrade.status.toUpperCase()}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${upgrade.reason ? `
+                    <div class="details-card border border-border-dark bg-navy-deep p-4 rounded-xl">
+                        <span class="text-[10px] uppercase font-bold text-slate-500 block mb-2">Reason for Upgrade:</span>
+                        <div class="bg-navy-deep p-3 rounded-lg text-slate-300 text-xs md:text-sm border border-border-dark italic">${upgrade.reason}</div>
+                    </div>
+                    ` : ''}
+                    
+                    ${upgrade.rejectionReason ? `
+                    <div class="details-card border border-border-dark bg-danger/5 p-4 rounded-xl">
+                        <span class="text-[10px] uppercase font-bold text-danger block mb-2">Rejection Reason:</span>
+                        <div class="bg-navy-deep p-3 rounded-lg text-danger text-xs md:text-sm border border-danger/20">${upgrade.rejectionReason}</div>
+                    </div>
+                    ` : ''}
+                    
+                    ${upgrade.reviewedAt ? `
+                    <div class="details-card border border-border-dark bg-navy-deep p-4 rounded-xl">
+                        <div class="grid grid-cols-2 gap-4 text-xs">
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Reviewed By:</span>
+                                <span class="text-slate-200 font-semibold">${upgrade.reviewedBy?.name || upgrade.reviewedBy || 'Admin'}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-500 block mb-1">Reviewed At:</span>
+                                <span class="text-slate-300 font-semibold">${new Date(upgrade.reviewedAt).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            document.getElementById('upgradeDetailsModal').classList.remove('hidden');
+        }
+
+        function closeUpgradeDetailsModal() {
+            document.getElementById('upgradeDetailsModal').classList.add('hidden');
+        }
+
+        async function adminLogin(email, password) {
+            const response = await fetch(`${API_BASE}/auth/admin/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            if (!response.ok) throw new Error('Invalid credentials');
+            const data = await response.json();
+            currentToken = data.token;
+            localStorage.setItem('adminToken', data.token);
+            localStorage.setItem('adminEmail', data.admin.email);
+            localStorage.setItem('adminName', data.admin.name);
+            return true;
+        }
+
+        async function fetchDeposits(status = null) {
+            try {
+                let url = `${API_BASE}/admin/deposits?limit=100`;
+                if (status && status !== 'all') {
+                    url += `&status=${status}`;
+                }
+                const response = await fetch(url, { headers: { 'Authorization': `Bearer ${currentToken}` } });
+                if (!response.ok) throw new Error('Failed to fetch deposits');
+                const data = await response.json();
+                deposits = data.deposits || [];
+                filterAndDisplayDeposits();
+                updateStats();
+            } catch (error) {
+                showToast('Error loading deposits: ' + error.message, true);
+            }
+        }
+
+        async function fetchWithdrawals() {
+            try {
+                const response = await fetch(`${API_BASE}/user/admin/withdrawal-requests`, {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+                if (!response.ok) throw new Error('Failed to fetch withdrawals');
+                const data = await response.json();
+                withdrawals = data.withdrawals || [];
+                filterAndDisplayWithdrawals();
+                updateStats();
+                document.getElementById('withdrawalCount').textContent = withdrawals.filter(w => w.status === 'Pending').length;
+                document.getElementById('statPendingWithdrawals').textContent = withdrawals.filter(w => w.status === 'Pending').length;
+            } catch (error) {
+                console.error('Fetch withdrawals error:', error);
+            }
+        }
+
+        async function fetchUpgradeRequests() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/upgrade-requests`, {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+                if (!response.ok) throw new Error('Failed to fetch upgrade requests');
+                const data = await response.json();
+                upgradeRequests = data.requests || [];
+                filterAndDisplayUpgrades();
+                updateStats();
+                const pendingCount = upgradeRequests.filter(r => r.status === 'pending').length;
+                document.getElementById('upgradeCount').textContent = pendingCount;
+                document.getElementById('statPendingUpgrades').textContent = pendingCount;
+            } catch (error) {
+                console.error('Fetch upgrades error:', error);
+                upgradeRequests = [];
+                filterAndDisplayUpgrades();
+            }
+        }
+
+        async function approveUpgrade(requestId) {
+            const notes = prompt('Enter approval notes (optional):', 'Upgrade approved by admin');
+            try {
+                const response = await fetch(`${API_BASE}/admin/upgrade-requests/${requestId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({ notes: notes || 'Approved' })
+                });
+                if (!response.ok) throw new Error('Approval failed');
+                const result = await response.json();
+                showToast(`✅ Upgrade approved! User upgraded to ${result.requestedTier}`, false);
+                await fetchUpgradeRequests();
+                await fetchDeposits(currentTab === 'deposits-pending' ? 'pending' : null);
+            } catch (error) {
+                showToast(error.message, true);
+            }
+        }
+
+        async function rejectUpgrade(requestId) {
+            const reason = prompt('Enter rejection reason:', 'Does not meet requirements');
+            if (!reason) return;
+            try {
+                const response = await fetch(`${API_BASE}/admin/upgrade-requests/${requestId}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({ reason })
+                });
+                if (!response.ok) throw new Error('Rejection failed');
+                showToast(`❌ Upgrade rejected: ${reason}`, false);
+                await fetchUpgradeRequests();
+            } catch (error) {
+                showToast(error.message, true);
+            }
+        }
+
+        async function approveWithdrawal(transactionId) {
+            const reason = prompt('Enter approval notes (optional):', 'Approved by admin');
+            try {
+                const response = await fetch(`${API_BASE}/user/admin/withdraw-request/${transactionId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({ notes: reason || 'Approved' })
+                });
+                if (!response.ok) throw new Error('Approval failed');
+                showToast('Withdrawal approved successfully!', false);
+                await fetchWithdrawals();
+                await fetchDeposits('pending');
+            } catch (error) {
+                showToast(error.message, true);
+            }
+        }
+
+        async function rejectWithdrawal(transactionId) {
+            const reason = prompt('Enter rejection reason:', 'Insufficient funds or invalid details');
+            if (!reason) return;
+            try {
+                const response = await fetch(`${API_BASE}/user/admin/withdraw-request/${transactionId}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({ reason })
+                });
+                if (!response.ok) throw new Error('Rejection failed');
+                showToast(`Withdrawal rejected: ${reason}`, false);
+                await fetchWithdrawals();
+                await fetchDeposits('pending');
+            } catch (error) {
+                showToast(error.message, true);
+            }
+        }
+
+        async function verifyDeposit(depositId, adminNotes = '') {
+            try {
+                const response = await fetch(`${API_BASE}/admin/deposits/${depositId}/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({ adminNotes })
+                });
+                if (!response.ok) throw new Error('Verification failed');
+                const data = await response.json();
+                showToast(`✅ Deposit verified and credited: $${data.deposit.amount.toLocaleString()}`, false);
+                await fetchDeposits(currentTab === 'deposits-pending' ? 'pending' : null);
+                await updateStats();
+                return data;
+            } catch (error) {
+                showToast(error.message, true);
+                throw error;
+            }
+        }
+
+        async function rejectDeposit(depositId, reason) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/deposits/${depositId}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({ reason })
+                });
+                if (!response.ok) throw new Error('Rejection failed');
+                showToast(`❌ Deposit rejected: ${reason}`, false);
+                await fetchDeposits(currentTab === 'deposits-pending' ? 'pending' : null);
+                return await response.json();
+            } catch (error) {
+                showToast(error.message, true);
+                throw error;
+            }
+        }
+
+        async function updateStats() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/deposits/stats`, {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+                if (response.ok) {
+                    const stats = await response.json();
+                    const pendingStats = stats.overall.find(s => s._id === 'pending') || { count: 0, totalAmount: 0 };
+                    document.getElementById('statPending').textContent = pendingStats.count;
+                    document.getElementById('pendingCount').textContent = pendingStats.count;
+
+                    const totalDeposits = stats.overall.reduce((sum, s) => sum + (s.totalAmount || 0), 0);
+                    document.getElementById('statTotalDeposits').textContent = `$${totalDeposits.toLocaleString()}`;
+                }
+
+                const totalWithdrawals = withdrawals.reduce((sum, w) => sum + (w.amountUSD || 0), 0);
+                document.getElementById('statTotalWithdrawals').textContent = `$${totalWithdrawals.toLocaleString()}`;
+
+                const pendingUpgrades = upgradeRequests.filter(r => r.status === 'pending').length;
+                document.getElementById('statPendingUpgrades').textContent = pendingUpgrades;
+                document.getElementById('upgradeCount').textContent = pendingUpgrades;
+            } catch (error) {
+                console.error('Stats error:', error);
+            }
+        }
+
+        function filterAndDisplayDeposits() {
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            let status = 'pending';
+            if (currentTab === 'deposits-verified') status = 'verified';
+            else if (currentTab === 'deposits-pending') status = 'pending';
+
+            filteredDeposits = deposits.filter(deposit => {
+                const matchesStatus = deposit.status === status;
+                const matchesSearch = !searchTerm ||
+                    deposit.referenceId?.toLowerCase().includes(searchTerm) ||
+                    deposit.userId?.fullName?.toLowerCase().includes(searchTerm) ||
+                    deposit.userId?.email?.toLowerCase().includes(searchTerm);
+                return matchesStatus && matchesSearch;
+            });
+            currentPage = 1;
+            displayDeposits();
+        }
+
+        function filterAndDisplayWithdrawals() {
+            const searchTerm = document.getElementById('withdrawalSearchInput')?.value.toLowerCase() || '';
+            filteredWithdrawals = withdrawals.filter(w => {
+                return !searchTerm ||
+                    w.userId?.fullName?.toLowerCase().includes(searchTerm) ||
+                    w.userId?.email?.toLowerCase().includes(searchTerm);
+            });
+            withdrawalPage = 1;
+            displayWithdrawals();
+        }
+
+        function filterAndDisplayUpgrades() {
+            const searchTerm = document.getElementById('upgradeSearchInput')?.value.toLowerCase() || '';
+            filteredUpgrades = upgradeRequests.filter(u => {
+                return !searchTerm ||
+                    u.userName?.toLowerCase().includes(searchTerm) ||
+                    u.userEmail?.toLowerCase().includes(searchTerm);
+            });
+            upgradePage = 1;
+            displayUpgrades();
+        }
+
+        function displayDeposits() {
+            const tbody = document.getElementById('depositsTableBody');
+            const itemsPerPage = 10;
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageDeposits = filteredDeposits.slice(start, end);
+
+            if (pageDeposits.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-500">No deposits matching search parameters</td></tr>`;
+                document.getElementById('showingStart').textContent = '0';
+                document.getElementById('showingEnd').textContent = '0';
+                document.getElementById('totalCount').textContent = filteredDeposits.length;
+                return;
+            }
+
+            tbody.innerHTML = pageDeposits.map(deposit => {
+                const imageUrl = getImageUrl(deposit.proofImageUrl);
+                const imageHtml = imageUrl ?
+                    `<img src="${imageUrl}" class="image-preview border border-border-dark hover:border-primary/50" onerror="this.src='https://via.placeholder.com/60x48?text=Error'" onclick="showImagePreview('${imageUrl}')">` :
+                    '<span class="text-xs text-slate-500 italic">No proof submitted</span>';
+
+                const statusClass = `status-${deposit.status}`;
+                const statusText = deposit.status.toUpperCase();
+
+                return `<tr class="table-row border-b border-border-dark text-xs md:text-sm text-slate-300">
+                    <td class="px-6 py-4 font-semibold">${new Date(deposit.createdAt).toLocaleDateString()}</td>
+                    <td class="px-6 py-4 font-mono text-primary font-bold">${deposit.referenceId}</td>
+                    <td class="px-6 py-4"><div class="font-extrabold text-white">${deposit.userId?.fullName || 'N/A'}</div><div class="text-[10px] text-slate-500">${deposit.userId?.email || 'N/A'}</div></td>
+                    <td class="px-6 py-4 font-bold">${deposit.method}</td>
+                    <td class="px-6 py-4 font-black text-primary">$${deposit.amount.toLocaleString()}</td>
+                    <td class="px-6 py-4">${imageHtml}</td>
+                    <td class="px-6 py-4"><div><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${statusClass} border uppercase tracking-wider">${statusText}</span></div></td>
+                    <td class="px-6 py-4">${deposit.status === 'pending' ? `
+                        <div class="flex gap-2">
+                            <button onclick="verifyDeposit('${deposit._id}', 'Approved')" class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 px-3 py-1 rounded-xl text-xs font-bold transition-all border border-emerald-500/30 uppercase tracking-wider">Verify</button>
+                            <button onclick="rejectDeposit('${deposit._id}', prompt('Rejection reason:'))" class="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-3 py-1 rounded-xl text-xs font-bold transition-all border border-red-500/30 uppercase tracking-wider">Reject</button>
+                        </div>` : '<span class="text-xs text-slate-600 font-bold">-</span>'}
+                    </td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('showingStart').textContent = start + 1;
+            document.getElementById('showingEnd').textContent = Math.min(end, filteredDeposits.length);
+            document.getElementById('totalCount').textContent = filteredDeposits.length;
+            document.getElementById('pageInfo').textContent = `Page ${currentPage}`;
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = end >= filteredDeposits.length;
+        }
+
+        function displayWithdrawals() {
+            const tbody = document.getElementById('withdrawalsTableBody');
+            const itemsPerPage = 10;
+            const start = (withdrawalPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageWithdrawals = filteredWithdrawals.slice(start, end);
+
+            if (pageWithdrawals.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-500">No withdrawal requests matching search parameters</td></tr>`;
+                document.getElementById('withdrawalShowingStart').textContent = '0';
+                document.getElementById('withdrawalShowingEnd').textContent = '0';
+                document.getElementById('withdrawalTotalCount').textContent = filteredWithdrawals.length;
+                return;
+            }
+
+            tbody.innerHTML = pageWithdrawals.map(w => {
+                const details = w.metadata?.withdrawalDetails || {};
+                const statusClass = w.status === 'Pending' ? 'status-pending' : (w.status === 'Completed' ? 'status-completed' : 'status-failed');
+
+                return `<tr class="table-row border-b border-border-dark text-xs md:text-sm text-slate-300">
+                    <td class="px-6 py-4 font-semibold">${new Date(w.createdAt).toLocaleDateString()}</td>
+                    <td class="px-6 py-4"><div class="font-extrabold text-white">${w.userId?.fullName || 'N/A'}</div><div class="text-[10px] text-slate-500">${w.userId?.email || 'N/A'}</div></td>
+                    <td class="px-6 py-4 font-bold">${w.metadata?.methodName || w.metadata?.method || 'N/A'}</td>
+                    <td class="px-6 py-4 font-black text-primary">$${w.amountUSD.toLocaleString()}</td>
+                    <td class="px-6 py-4"><button onclick='showDetailsModal(${JSON.stringify(details)})' class="text-primary hover:underline font-bold text-xs uppercase tracking-wider">View Payload</button></td>
+                    <td class="px-6 py-4"><div><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${statusClass} border uppercase tracking-wider">${w.status.toUpperCase()}</span></div></td>
+                    <td class="px-6 py-4">${w.status === 'Pending' ? `
+                        <div class="flex gap-2">
+                            <button onclick="approveWithdrawal('${w._id}')" class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 px-3 py-1 rounded-xl text-xs font-bold transition-all border border-emerald-500/30 uppercase tracking-wider">Approve</button>
+                            <button onclick="rejectWithdrawal('${w._id}')" class="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-3 py-1 rounded-xl text-xs font-bold transition-all border border-red-500/30 uppercase tracking-wider">Reject</button>
+                        </div>` : '<span class="text-xs text-slate-600 font-bold">-</span>'}
+                    </td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('withdrawalShowingStart').textContent = start + 1;
+            document.getElementById('withdrawalShowingEnd').textContent = Math.min(end, filteredWithdrawals.length);
+            document.getElementById('withdrawalTotalCount').textContent = filteredWithdrawals.length;
+            document.getElementById('withdrawalPageInfo').textContent = `Page ${withdrawalPage}`;
+            document.getElementById('withdrawalPrevPage').disabled = withdrawalPage === 1;
+            document.getElementById('withdrawalNextPage').disabled = end >= filteredWithdrawals.length;
+        }
+
+        function displayUpgrades() {
+            const tbody = document.getElementById('upgradesTableBody');
+            const itemsPerPage = 10;
+            const start = (upgradePage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageUpgrades = filteredUpgrades.slice(start, end);
+
+            if (pageUpgrades.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-500">No upgrade requests matching search parameters</td></tr>`;
+                document.getElementById('upgradeShowingStart').textContent = '0';
+                document.getElementById('upgradeShowingEnd').textContent = '0';
+                document.getElementById('upgradeTotalCount').textContent = filteredUpgrades.length;
+                return;
+            }
+
+            tbody.innerHTML = pageUpgrades.map(u => {
+                const statusClass = u.status === 'pending' ? 'status-pending' : (u.status === 'approved' ? 'status-approved' : 'status-rejected');
+                const statusText = u.status.toUpperCase();
+
+                return `<tr class="table-row border-b border-border-dark text-xs md:text-sm text-slate-300">
+                    <td class="px-6 py-4 font-semibold">${new Date(u.createdAt).toLocaleDateString()}</td>
+                    <td class="px-6 py-4"><div class="font-extrabold text-white">${u.userName || 'N/A'}</div><div class="text-[10px] text-slate-500">${u.userEmail || 'N/A'}</div></td>
+                    <td class="px-6 py-4"><div><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/20 text-primary border border-primary/25">${u.currentTier}</span></div></td>
+                    <td class="px-6 py-4"><div><span class="px-2 py-0.5 rounded-full text-xs font-semibold upgrade-badge">${u.requestedTier}</span></div></td>
+                    <td class="px-6 py-4 font-black text-primary">$${u.upgradeCost}</td>
+                    <td class="px-6 py-4"><button onclick='showUpgradeDetails(${JSON.stringify(u).replace(/'/g, "&apos;")})' class="text-primary hover:underline font-bold text-xs uppercase tracking-wider">View Details</button></td>
+                    <td class="px-6 py-4"><div><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${statusClass} border uppercase tracking-wider">${statusText}</span></div></td>
+                    <td class="px-6 py-4">${u.status === 'pending' ? `
+                        <div class="flex gap-2">
+                            <button onclick="approveUpgrade('${u._id}')" class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 px-3 py-1 rounded-xl text-xs font-bold transition-all border border-emerald-500/30 uppercase tracking-wider">Approve</button>
+                            <button onclick="rejectUpgrade('${u._id}')" class="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-3 py-1 rounded-xl text-xs font-bold transition-all border border-red-500/30 uppercase tracking-wider">Reject</button>
+                        </div>` : '<span class="text-xs text-slate-600 font-bold">-</span>'}
+                    </td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('upgradeShowingStart').textContent = start + 1;
+            document.getElementById('upgradeShowingEnd').textContent = Math.min(end, filteredUpgrades.length);
+            document.getElementById('upgradeTotalCount').textContent = filteredUpgrades.length;
+            document.getElementById('upgradePageInfo').textContent = `Page ${upgradePage}`;
+            document.getElementById('upgradePrevPage').disabled = upgradePage === 1;
+            document.getElementById('upgradeNextPage').disabled = end >= filteredUpgrades.length;
+        }
+
+        function setupEventListeners() {
+            document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.nav-item[data-tab]').forEach(nav => nav.classList.remove('nav-active'));
+                    item.classList.add('nav-active');
+
+                    currentTab = item.getAttribute('data-tab');
+                    const titles = {
+                        'deposits-pending': 'Pending Deposits',
+                        'deposits-verified': 'Verified Deposits',
+                        'withdrawals': 'Withdrawal Requests',
+                        'upgrades': 'Membership Upgrade Requests'
+                    };
+                    document.getElementById('pageTitle').textContent = titles[currentTab] || 'Dashboard';
+
+                    document.getElementById('deposits-container').style.display = currentTab === 'withdrawals' || currentTab === 'upgrades' ? 'none' : 'block';
+                    document.getElementById('withdrawals-container').style.display = currentTab === 'withdrawals' ? 'block' : 'none';
+                    document.getElementById('upgrades-container').style.display = currentTab === 'upgrades' ? 'block' : 'none';
+
+                    if (currentTab === 'withdrawals') {
+                        fetchWithdrawals();
+                    } else if (currentTab === 'upgrades') {
+                        fetchUpgradeRequests();
+                    } else {
+                        fetchDeposits(currentTab === 'deposits-pending' ? 'pending' : 'verified');
+                    }
+                });
+            });
+
+            document.getElementById('searchInput')?.addEventListener('input', () => filterAndDisplayDeposits());
+            document.getElementById('refreshBtn')?.addEventListener('click', () => fetchDeposits(currentTab === 'deposits-pending' ? 'pending' : 'verified'));
+            document.getElementById('withdrawalSearchInput')?.addEventListener('input', () => filterAndDisplayWithdrawals());
+            document.getElementById('refreshWithdrawalsBtn')?.addEventListener('click', () => fetchWithdrawals());
+            document.getElementById('upgradeSearchInput')?.addEventListener('input', () => filterAndDisplayUpgrades());
+            document.getElementById('refreshUpgradesBtn')?.addEventListener('click', () => fetchUpgradeRequests());
+
+            document.getElementById('prevPage')?.addEventListener('click', () => { if (currentPage > 1) { currentPage--; displayDeposits(); } });
+            document.getElementById('nextPage')?.addEventListener('click', () => { if (currentPage * 10 < filteredDeposits.length) { currentPage++; displayDeposits(); } });
+            document.getElementById('withdrawalPrevPage')?.addEventListener('click', () => { if (withdrawalPage > 1) { withdrawalPage--; displayWithdrawals(); } });
+            document.getElementById('withdrawalNextPage')?.addEventListener('click', () => { if (withdrawalPage * 10 < filteredWithdrawals.length) { withdrawalPage++; displayWithdrawals(); } });
+            document.getElementById('upgradePrevPage')?.addEventListener('click', () => { if (upgradePage > 1) { upgradePage--; displayUpgrades(); } });
+            document.getElementById('upgradeNextPage')?.addEventListener('click', () => { if (upgradePage * 10 < filteredUpgrades.length) { upgradePage++; displayUpgrades(); } });
+            document.getElementById('logoutBtn')?.addEventListener('click', () => {
+                localStorage.clear();
+                location.reload();
+            });
+        }
+
+        document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            const loginBtn = e.target.querySelector('button');
+            const originalText = loginBtn.innerHTML;
+            loginBtn.innerHTML = '<div class="loading-spinner"></div> Logging in...';
+            loginBtn.disabled = true;
+            try {
+                await adminLogin(email, password);
+                document.getElementById('loginModal').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                document.getElementById('adminName').textContent = email;
+                await fetchDeposits('pending');
+                await fetchWithdrawals();
+                await fetchUpgradeRequests();
+                showToast('Console authorization verified!');
+            } catch (error) {
+                showToast(error.message, true);
+            } finally {
+                loginBtn.innerHTML = originalText;
+                loginBtn.disabled = false;
+            }
+        });
+
+        const savedToken = localStorage.getItem('adminToken');
+        if (savedToken) {
+            currentToken = savedToken;
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            document.getElementById('adminName').textContent = localStorage.getItem('adminEmail') || 'Admin Operator';
+            fetchDeposits('pending');
+            fetchWithdrawals();
+            fetchUpgradeRequests();
+        }
+
+        setupEventListeners();
+    </script>
+</body>
+</html>

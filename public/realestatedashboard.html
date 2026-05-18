@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SAXOINVESTMENT | Premium Real Estate Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d4af35",
+                        "primary-dark": "#b89c2e",
+                        "background-dark": "#12110a",
+                        "navy-muted": "#1c1a11",
+                        "navy-deep": "#080704",
+                        "surface-dark": "#1c1a11",
+                        "border-dark": "#2d2a1b",
+                        "success": "#10b981",
+                        "danger": "#ef4444",
+                        "warning": "#f59e0b",
+                        "info": "#3b82f6"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #12110a;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2d2a1b;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #d4af35;
+        }
+        .glass-effect {
+            background: rgba(28, 26, 17, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 53, 0.2);
+        }
+        .toast-notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            transition: all 0.2s ease;
+        }
+        .loading-spinner {
+            border: 2px solid rgba(212, 175, 53, 0.2);
+            border-top-color: #d4af35;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .modal-backdrop { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 font-display antialiased">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <!-- Top Navigation Bar -->
+    <header class="flex items-center justify-between border-b border-border-dark bg-navy-deep px-6 py-3 sticky top-0 z-50 backdrop-blur-md bg-opacity-90">
+        <div class="flex items-center gap-8">
+            <div class="flex items-center gap-3 text-primary">
+                <div class="size-9 bg-primary rounded flex items-center justify-center text-navy-deep font-extrabold shadow-lg shadow-primary/20">
+                    <span class="material-symbols-outlined font-bold text-2xl">account_balance</span>
+                </div>
+                <h2 class="text-xl font-extrabold tracking-tight text-white">SAXO<span class="text-primary font-light">INVESTMENT</span></h2>
+            </div>
+            <nav class="hidden md:flex items-center gap-6 text-sm font-semibold">
+                <a class="text-slate-400 hover:text-primary transition-colors flex items-center gap-1.5" href="investmentdashboard.html">
+                    <span class="material-symbols-outlined text-lg">dashboard</span>
+                    Dashboard
+                </a>
+                <a class="text-primary flex items-center gap-1.5 border-b-2 border-primary pb-1" href="realestatedashboard.html">
+                    <span class="material-symbols-outlined text-lg">domain</span>
+                    Real Estate Hub
+                </a>
+                <a id="leaf-terminal-link" class="text-slate-400 hover:text-primary transition-colors flex items-center gap-1.5" href="/leaf/index.html" target="_blank">
+                    <span class="material-symbols-outlined text-lg">monitoring</span>
+                    LEAF Pro Terminal
+                </a>
+            </nav>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="size-9 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center overflow-hidden cursor-pointer relative" id="user-profile-btn">
+                <span class="material-symbols-outlined text-primary">person</span>
+            </div>
+            <button id="logout-nav-btn" class="hidden md:flex items-center gap-2 text-slate-400 hover:text-danger transition-colors font-semibold text-sm">
+                <span class="material-symbols-outlined text-base">logout</span>
+                <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl mx-auto w-full p-4 md:p-8" id="main-content">
+        <!-- Back Navigation Trigger -->
+        <div class="mb-6 flex items-center justify-between">
+            <a href="investmentdashboard.html" class="inline-flex items-center gap-2 text-primary hover:text-primary-dark font-semibold text-sm transition-all">
+                <span class="material-symbols-outlined text-base">arrow_back</span>
+                Back to Core Dashboard
+            </a>
+        </div>
+
+        <!-- Login Screen (hidden initially) -->
+        <div id="login-screen" style="display: none;">
+            <div class="flex items-center justify-center min-h-[65vh]">
+                <div class="glass-effect border border-primary/25 rounded-2xl p-8 max-w-md w-full shadow-2xl">
+                    <div class="text-center mb-8">
+                        <div class="bg-primary p-3.5 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/20">
+                            <span class="material-symbols-outlined text-navy-deep text-3xl font-bold">domain</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white tracking-tight">Real Estate SSO Gateway</h2>
+                        <p class="text-slate-400 mt-2 text-sm">Synchronizing your SAXOINVESTMENT trading session...</p>
+                    </div>
+                    
+                    <form id="login-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
+                            <input type="email" id="login-email" 
+                                   class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-3 text-slate-200 focus:ring-primary focus:border-primary text-sm"
+                                   placeholder="admin@globalvest.com" required value="admin@globalvest.com">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Password</label>
+                            <input type="password" id="login-password" 
+                                   class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-3 text-slate-200 focus:ring-primary focus:border-primary text-sm"
+                                   placeholder="••••••••" required value="password123">
+                        </div>
+                        
+                        <button type="submit" 
+                                class="w-full bg-primary hover:bg-primary-dark text-navy-deep font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-primary/25">
+                            Authenticate Real Estate Node
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loading-state" class="flex justify-center items-center h-96">
+            <div class="loading-spinner"></div>
+            <span class="ml-3 text-slate-400">Synchronizing ledger assets...</span>
+        </div>
+        
+        <!-- Dashboard Content (hidden initially) -->
+        <div id="dashboard-content" style="display: none;"></div>
+    </main>
+
+    <footer class="mt-12 border-t border-border-dark py-8 bg-navy-deep">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2 text-slate-400">
+                <span class="material-symbols-outlined">account_balance</span>
+                <span class="text-xs font-semibold uppercase tracking-widest text-primary/70">SAXOINVESTMENT Real Estate Hub</span>
+            </div>
+            <div class="flex gap-8">
+                <a class="text-xs text-slate-500 hover:text-primary transition-colors" href="#">Privacy Policy</a>
+                <a class="text-xs text-slate-500 hover:text-primary transition-colors" href="#">Risk Disclosures</a>
+                <a class="text-xs text-slate-500 hover:text-primary transition-colors" href="#">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast-notification bg-navy-deep border border-primary/30 rounded-xl px-4 py-3 shadow-xl flex items-center gap-3 hidden">
+    <span class="material-symbols-outlined text-primary">info</span>
+    <span id="toast-message" class="text-sm text-slate-200"></span>
+</div>
+
+<!-- Add/Invest Custom Property Modal -->
+<div id="invest-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden modal-backdrop" onclick="closeInvestModal(event)">
+    <div class="bg-navy-muted rounded-2xl p-6 w-full max-w-md mx-4 border border-primary/20 shadow-2xl" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-4 border-b border-border-dark pb-3">
+            <h3 class="text-xl font-bold flex items-center gap-2 text-white"><span class="material-symbols-outlined text-primary">add_home</span>Propose Fractional Asset</h3>
+            <button onclick="closeInvestModal()" class="text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <form id="invest-form" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-1.5 text-slate-300">Property Name</label>
+                <input type="text" id="property-name" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2 text-slate-200 focus:ring-primary focus:border-primary text-sm" placeholder="Prime Manhattan Penthouse" required/>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1.5 text-slate-300">Location (City, Country)</label>
+                <input type="text" id="property-location" placeholder="New York, USA" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2 text-slate-200 focus:ring-primary focus:border-primary text-sm" required/>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1.5 text-slate-300">Property Type</label>
+                <select id="property-type" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2 text-slate-200 focus:ring-primary focus:border-primary text-sm">
+                    <option value="Residential">Residential High-Rise</option>
+                    <option value="Commercial">Commercial Plaza</option>
+                    <option value="Industrial">Industrial Warehouse</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1.5 text-slate-300">Investment ($)</label>
+                    <input type="number" id="investment-amount" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2 text-slate-200 focus:ring-primary focus:border-primary text-sm" placeholder="50000" required/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1.5 text-slate-300">Ownership (%)</label>
+                    <input type="number" step="0.1" id="ownership-percent" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2 text-slate-200 focus:ring-primary focus:border-primary text-sm" placeholder="1.5" required/>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1.5 text-slate-300">Monthly Rent Yield ($)</label>
+                <input type="number" id="monthly-rental" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2 text-slate-200 focus:ring-primary focus:border-primary text-sm" placeholder="350"/>
+            </div>
+            <div class="flex gap-3 pt-4 border-t border-border-dark mt-6">
+                <button type="submit" class="flex-1 bg-primary hover:bg-primary-dark text-navy-deep py-2.5 rounded-xl font-bold transition-all text-sm">Acquire Share</button>
+                <button type="button" onclick="closeInvestModal()" class="flex-1 bg-navy-deep border border-border-dark text-slate-300 py-2.5 rounded-xl font-semibold hover:bg-border-dark transition-all text-sm">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Token Purchase Marketplace Modal -->
+<div id="purchase-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden modal-backdrop" onclick="closePurchaseModal()">
+    <div class="bg-navy-muted rounded-2xl p-6 w-full max-w-md mx-4 border border-primary/20 shadow-2xl" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-4 border-b border-border-dark pb-3">
+            <h3 class="text-xl font-bold flex items-center gap-2 text-white"><span class="material-symbols-outlined text-primary">shopping_bag</span>Purchase Fractional Tokens</h3>
+            <button onclick="closePurchaseModal()" class="text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div class="space-y-4">
+            <div class="bg-navy-deep p-4 rounded-xl border border-border-dark">
+                <p class="text-xs text-slate-400 uppercase font-bold">Selected Asset</p>
+                <p class="text-lg font-bold text-white mt-1" id="purchase-property-title">-</p>
+                <p class="text-xs text-slate-500 flex items-center gap-1 mt-0.5" id="purchase-property-location">-</p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-navy-deep p-3 rounded-xl border border-border-dark text-center">
+                    <p class="text-[10px] text-slate-500 uppercase font-bold">Price per Token</p>
+                    <p class="text-lg font-extrabold text-primary" id="purchase-token-price">$0.00</p>
+                </div>
+                <div class="bg-navy-deep p-3 rounded-xl border border-border-dark text-center">
+                    <p class="text-[10px] text-slate-500 uppercase font-bold">Expected Yield</p>
+                    <p class="text-lg font-extrabold text-success" id="purchase-token-yield">0.0%</p>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-300">Quantity to Buy (Tokens)</label>
+                <div class="relative">
+                    <input type="number" id="purchase-qty" min="1" step="1" value="10" 
+                           class="w-full bg-navy-deep border border-border-dark rounded-xl py-3 pl-4 pr-16 text-lg font-bold text-slate-200 focus:ring-primary focus:border-primary"/>
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold uppercase">Tokens</span>
+                </div>
+                <div class="flex justify-between text-xs text-slate-500 px-1 mt-1">
+                    <span id="purchase-qty-limit">Available: -</span>
+                    <span id="purchase-buying-power">Buying Power: -</span>
+                </div>
+            </div>
+
+            <div class="bg-primary/5 p-4 rounded-xl border border-primary/25 mt-4">
+                <div class="flex justify-between items-center mb-1.5">
+                    <p class="text-xs text-slate-400">Total Purchase Cost</p>
+                    <p class="text-lg font-extrabold text-white" id="purchase-total-cost">$0.00</p>
+                </div>
+                <div class="flex justify-between items-center">
+                    <p class="text-xs text-slate-400">Estimated Monthly Yield</p>
+                    <p class="text-sm font-bold text-success" id="purchase-estimated-yield">$0.00/mo</p>
+                </div>
+            </div>
+
+            <div class="flex gap-3 pt-4 border-t border-border-dark mt-6">
+                <button id="purchase-submit-btn" class="flex-1 bg-primary hover:bg-primary-dark text-navy-deep py-3 rounded-xl font-bold transition-all text-sm shadow-lg shadow-primary/25">Confirm Investment</button>
+                <button type="button" onclick="closePurchaseModal()" class="flex-1 bg-navy-deep border border-border-dark text-slate-300 py-3 rounded-xl font-semibold hover:bg-border-dark transition-all text-sm">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Logout Confirmation Modal -->
+<div id="logout-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden modal-backdrop" onclick="closeLogoutModal()">
+    <div class="bg-navy-muted rounded-2xl p-6 w-full max-w-sm mx-4 border border-primary/20 shadow-2xl" onclick="event.stopPropagation()">
+        <h3 class="text-xl font-bold mb-3 text-white">Confirm Portal Logout</h3>
+        <p class="text-slate-400 mb-6 text-sm">Are you sure you want to terminate your premium session?</p>
+        <div class="flex gap-3">
+            <button id="confirm-logout" class="flex-1 bg-danger hover:bg-danger/80 text-white py-2.5 rounded-xl font-bold transition-colors text-sm">Terminate</button>
+            <button onclick="closeLogoutModal()" class="flex-1 bg-navy-deep border border-border-dark text-slate-300 py-2.5 rounded-xl font-semibold hover:bg-border-dark transition-all text-sm">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = window.location.origin + '/api';
+    let authToken = null;
+    let currentUser = null;
+    let marketplaceProperties = [];
+    let selectedMarketplaceProp = null;
+
+    // Helper: Show toast notification
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toast-message');
+        toastMsg.innerText = message;
+        toast.classList.remove('hidden');
+        if (isError) {
+            toast.style.borderColor = '#ef4444';
+            toast.querySelector('.material-symbols-outlined').style.color = '#ef4444';
+        } else {
+            toast.style.borderColor = '#d4af35';
+            toast.querySelector('.material-symbols-outlined').style.color = '#d4af35';
+        }
+        setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 3000);
+    }
+
+    // Dynamic SSO Links & Auth Synchronization
+    function getAuthToken() {
+        return localStorage.getItem('auth_token') || localStorage.getItem('token');
+    }
+
+    function setAuthToken(token) {
+        if (token) {
+            localStorage.setItem('auth_token', token);
+            localStorage.setItem('token', token);
+            authToken = token;
+        } else {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('token');
+            authToken = null;
+        }
+    }
+
+    function setUserData(user) {
+        if (user) {
+            localStorage.setItem('user_data', JSON.stringify(user));
+            localStorage.setItem('user', JSON.stringify(user));
+            currentUser = user;
+        } else {
+            localStorage.removeItem('user_data');
+            localStorage.removeItem('user');
+            currentUser = null;
+        }
+    }
+
+    function getUserData() {
+        const userStr = localStorage.getItem('user_data') || localStorage.getItem('user');
+        return userStr ? JSON.parse(userStr) : null;
+    }
+
+    function clearAuth() {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user_data');
+        localStorage.removeItem('user');
+        authToken = null;
+        currentUser = null;
+    }
+
+    // Login function
+    async function login(email, password) {
+        try {
+            const response = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.message || 'Login failed');
+            }
+            
+            setAuthToken(data.token);
+            setUserData(data.user);
+            
+            showToast('Welcome back, ' + data.user.fullName);
+            await loadDashboard();
+            return true;
+        } catch (error) {
+            console.error('Login error:', error);
+            showToast(error.message, true);
+            return false;
+        }
+    }
+
+    // Logout function
+    function logout() {
+        clearAuth();
+        showLoginScreen();
+        showToast('Logged out successfully');
+    }
+
+    // Show login screen
+    function showLoginScreen() {
+        document.getElementById('login-screen').style.display = 'block';
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('dashboard-content').style.display = 'none';
+        
+        document.getElementById('dashboard-content').innerHTML = '';
+        
+        const loginForm = document.getElementById('login-form');
+        const newForm = loginForm.cloneNode(true);
+        loginForm.parentNode.replaceChild(newForm, loginForm);
+        
+        newForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            const submitBtn = newForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Synchronizing...';
+            submitBtn.disabled = true;
+            
+            await login(email, password);
+            
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        });
+    }
+
+    // Close Modals
+    function closeInvestModal(event) {
+        document.getElementById('invest-modal').classList.add('hidden');
+    }
+    function closePurchaseModal() {
+        document.getElementById('purchase-modal').classList.add('hidden');
+    }
+    function closeLogoutModal() {
+        document.getElementById('logout-modal').classList.add('hidden');
+    }
+
+    // Open Custom Purchase Modal
+    function openPurchase(propertyId) {
+        selectedMarketplaceProp = marketplaceProperties.find(p => p._id === propertyId);
+        if (!selectedMarketplaceProp) return;
+
+        document.getElementById('purchase-property-title').textContent = selectedMarketplaceProp.title;
+        document.getElementById('purchase-property-location').innerHTML = `<span class="material-symbols-outlined text-xs">location_on</span> ${selectedMarketplaceProp.location}`;
+        document.getElementById('purchase-token-price').textContent = `$${selectedMarketplaceProp.tokenPrice.toFixed(2)}`;
+        document.getElementById('purchase-token-yield').textContent = `${selectedMarketplaceProp.expectedYield}%`;
+        document.getElementById('purchase-qty-limit').textContent = `Available: ${selectedMarketplaceProp.availableTokens} / ${selectedMarketplaceProp.totalTokens} Tokens`;
+        
+        // Calculate user buying power
+        const buyingPowerVal = currentUser?.buyingPower || 50000;
+        document.getElementById('purchase-buying-power').textContent = `Buying Power: $${buyingPowerVal.toLocaleString()}`;
+
+        const qtyInput = document.getElementById('purchase-qty');
+        qtyInput.value = 10;
+        qtyInput.max = selectedMarketplaceProp.availableTokens;
+        
+        updatePurchaseCalculations();
+        document.getElementById('purchase-modal').classList.remove('hidden');
+    }
+
+    function updatePurchaseCalculations() {
+        if (!selectedMarketplaceProp) return;
+        const qty = parseInt(document.getElementById('purchase-qty').value) || 0;
+        const price = selectedMarketplaceProp.tokenPrice;
+        const total = qty * price;
+        const expectedYieldPercent = selectedMarketplaceProp.expectedYield / 100;
+        const monthlyYield = (total * expectedYieldPercent) / 12;
+
+        document.getElementById('purchase-total-cost').textContent = `$${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('purchase-estimated-yield').textContent = `$${monthlyYield.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}/mo`;
+    }
+
+    document.getElementById('purchase-qty')?.addEventListener('input', updatePurchaseCalculations);
+
+    document.getElementById('purchase-submit-btn')?.addEventListener('click', async () => {
+        const qty = parseInt(document.getElementById('purchase-qty').value) || 0;
+        if (qty <= 0) {
+            showToast('Please enter a valid quantity', true);
+            return;
+        }
+        
+        const token = getAuthToken();
+        const price = selectedMarketplaceProp.tokenPrice;
+        const total = qty * price;
+
+        if (currentUser && total > currentUser.buyingPower) {
+            showToast('Insufficient buying power in trading ledger', true);
+            return;
+        }
+
+        const submitBtn = document.getElementById('purchase-submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing Asset...';
+
+        try {
+            const response = await fetch(`${API_BASE}/properties/invest`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name: selectedMarketplaceProp.title,
+                    location: {
+                        city: selectedMarketplaceProp.location.split(',')[0],
+                        country: selectedMarketplaceProp.location.split(',')[1] || 'Global'
+                    },
+                    type: 'Residential',
+                    investmentAmount: total,
+                    ownershipPercentage: ((qty / selectedMarketplaceProp.totalTokens) * 100).toFixed(2),
+                    monthlyRentalIncome: ((selectedMarketplaceProp.monthlyRentalIncome * qty) / selectedMarketplaceProp.totalTokens).toFixed(2)
+                })
+            });
+
+            if (response.status === 401) {
+                showToast('Session expired.', true);
+                clearAuth();
+                showLoginScreen();
+                return;
+            }
+
+            if (!response.ok) throw new Error('Fractional Investment Failed');
+            
+            showToast(`Asset Share Acquired! $${total.toLocaleString()} allocated.`);
+            closePurchaseModal();
+            await loadDashboard();
+        } catch (error) {
+            showToast(error.message, true);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Confirm Investment';
+        }
+    });
+
+    // Load all dashboard data
+    async function loadDashboard() {
+        const token = getAuthToken();
+        
+        if (!token) {
+            showLoginScreen();
+            return;
+        }
+        
+        try {
+            const headers = { 'Authorization': `Bearer ${token}` };
+            
+            const [portfolioRes, propertiesRes, rentalsRes, transactionsRes] = await Promise.all([
+                fetch(`${API_BASE}/portfolio/summary`, { headers }),
+                fetch(`${API_BASE}/properties`, { headers }),
+                fetch(`${API_BASE}/rental/history`, { headers }),
+                fetch(`${API_BASE}/transactions/recent`, { headers })
+            ]);
+            
+            if (portfolioRes.status === 401 || propertiesRes.status === 401) {
+                showToast('Session expired. Please login again.', true);
+                clearAuth();
+                showLoginScreen();
+                return;
+            }
+            
+            if (!portfolioRes.ok || !propertiesRes.ok) {
+                throw new Error('Failed to fetch real estate ledger data');
+            }
+            
+            const portfolio = await portfolioRes.json();
+            const properties = await propertiesRes.json();
+            const rentals = await rentalsRes.json();
+            const transactions = await transactionsRes.json();
+            
+            // Query local marketplace properties
+            try {
+                const marketplaceRes = await fetch(`${API_BASE}/properties/marketplace`, { headers });
+                if (marketplaceRes.ok) {
+                    marketplaceProperties = await marketplaceRes.json();
+                }
+            } catch (e) {
+                console.warn('Marketplace fetch failed, using memory fallback listings.');
+            }
+
+            if (!marketplaceProperties || marketplaceProperties.length === 0) {
+                marketplaceProperties = [
+                    {
+                        _id: '607f1f0873e7900000000101',
+                        title: 'High-Yield London Luxury Suite',
+                        location: 'Kensington, London, UK',
+                        image: 'https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=800&fit=crop&auto=format',
+                        price: 850000,
+                        tokenPrice: 50,
+                        totalTokens: 17000,
+                        availableTokens: 8240,
+                        expectedYield: 8.4,
+                        monthlyRentalIncome: 5950
+                    },
+                    {
+                        _id: '607f1f0873e7900000000102',
+                        title: 'Silicon Valley Premium Tech Space',
+                        location: 'Palo Alto, California, USA',
+                        image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&fit=crop&auto=format',
+                        price: 2400000,
+                        tokenPrice: 100,
+                        totalTokens: 24000,
+                        availableTokens: 11950,
+                        expectedYield: 9.2,
+                        monthlyRentalIncome: 18400
+                    },
+                    {
+                        _id: '607f1f0873e7900000000103',
+                        title: 'Metropolitan Dubai Fractional Penthouse',
+                        location: 'Downtown Dubai, UAE',
+                        image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&fit=crop&auto=format',
+                        price: 1500000,
+                        tokenPrice: 75,
+                        totalTokens: 20000,
+                        availableTokens: 16500,
+                        expectedYield: 7.9,
+                        monthlyRentalIncome: 9875
+                    }
+                ];
+            }
+            
+            renderDashboard(portfolio, properties, rentals, transactions);
+        } catch (error) {
+            console.error('Error loading dashboard:', error);
+            showToast('Error loading dashboard data', true);
+            document.getElementById('loading-state').innerHTML = `
+                <div class="text-center bg-navy-muted border border-danger/30 rounded-xl p-8 max-w-md mx-auto">
+                    <p class="text-danger mb-4 font-bold text-lg">⚠️ Real Estate Backend Offline</p>
+                    <p class="text-slate-400 text-sm">Please launch or retry connection to port 8000 microservice.</p>
+                    <button onclick="location.reload()" class="mt-6 bg-primary px-6 py-2.5 rounded-xl text-navy-deep font-bold hover:opacity-90">Retry Platform Load</button>
+                </div>
+            `;
+        }
+    }
+
+    // Render dashboard with real data
+    function renderDashboard(portfolio, properties, rentals, transactions) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('loading-state').style.display = 'none';
+        const container = document.getElementById('dashboard-content');
+        container.style.display = 'block';
+        
+        // Calculate totals
+        const totalREValue = portfolio.totalRealEstateValue || 45000;
+        const monthlyRental = portfolio.monthlyRentalIncome || 1240;
+        const totalAppreciation = portfolio.totalAppreciation || 3410;
+        const propertyCount = properties.length;
+        
+        const allocationPercent = currentUser ? ((totalREValue / (currentUser.totalPortfolioValue || 150000)) * 100).toFixed(1) : 15;
+        const appreciationPercent = ((totalAppreciation / (totalREValue - totalAppreciation || 1)) * 100).toFixed(1);
+        
+        // Build properties HTML
+        let propertiesHtml = '';
+        if (properties && properties.length > 0) {
+            properties.forEach(prop => {
+                const statusColor = 'success';
+                const valueChange = prop.currentValue - prop.investmentAmount;
+                const valueClass = valueChange >= 0 ? 'text-success' : 'text-danger';
+                
+                propertiesHtml += `
+                    <div class="bg-navy-muted p-5 rounded-xl border border-border-dark shadow-sm hover:border-primary/50 transition-all cursor-pointer group">
+                        <div class="flex flex-col md:flex-row md:items-center gap-6">
+                            <div class="w-full md:w-32 h-24 rounded-lg overflow-hidden bg-navy-deep shrink-0 flex items-center justify-center border border-border-dark relative">
+                                <span class="material-symbols-outlined text-4xl text-primary z-10">apartment</span>
+                                <div class="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-all"></div>
+                            </div>
+                            <div class="flex-1">
+                                <h5 class="font-extrabold text-lg text-white group-hover:text-primary transition-colors">${prop.name}</h5>
+                                <p class="text-slate-400 text-sm flex items-center gap-1 mt-1">
+                                    <span class="material-symbols-outlined text-xs text-primary">location_on</span>
+                                    ${prop.location?.city || 'Global'}, ${prop.location?.country || 'International'}
+                                </p>
+                            </div>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-8 flex-[2]">
+                                <div>
+                                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">My Investment</p>
+                                    <p class="font-bold text-white text-base">$${prop.investmentAmount.toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Current Value</p>
+                                    <p class="font-bold ${valueClass} text-base">$${prop.currentValue.toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Ownership</p>
+                                    <p class="font-bold text-white text-base">${prop.ownershipPercentage}%</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Status</p>
+                                    <span class="bg-${statusColor}/10 text-${statusColor} text-[10px] font-extrabold px-2.5 py-1 rounded-lg uppercase tracking-wider whitespace-nowrap border border-${statusColor}/25">Generating Yield</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            propertiesHtml = `
+                <div class="text-center py-8 bg-navy-muted rounded-xl border border-border-dark p-6">
+                    <span class="material-symbols-outlined text-4xl text-primary/50 mb-2">folder_open</span>
+                    <p class="text-sm font-bold text-slate-300">Fractional Ledger Empty</p>
+                    <p class="text-xs text-slate-500 mt-1">Browse the property marketplace below to deploy capital.</p>
+                </div>
+            `;
+        }
+        
+        // Build rental history HTML
+        let rentalsHtml = '';
+        const rentalList = rentals.recentPayments || rentals || [];
+        if (rentalList.length > 0) {
+            rentalList.slice(0, 5).forEach(rental => {
+                const date = new Date(rental.payoutDate || rental.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                rentalsHtml += `
+                    <tr class="border-b border-border-dark">
+                        <td class="py-4 text-sm font-semibold text-slate-300">${date}</td>
+                        <td class="py-4 text-sm font-bold text-white">${rental.propertyName}</td>
+                        <td class="py-4 text-sm font-extrabold text-center text-success">+$${rental.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        <td class="py-4 text-sm font-extrabold text-center text-primary">${rental.yieldPercentage}%</td>
+                        <td class="py-4 text-right">
+                            <span class="material-symbols-outlined text-success text-lg">check_circle</span>
+                        </td>
+                    </tr>
+                `;
+            });
+        } else {
+            rentalsHtml = '<tr><td colspan="5" class="py-6 text-center text-slate-500 text-sm">No rental yield distributions processed yet</td></tr>';
+        }
+        
+        // Build marketplace HTML
+        let marketplaceHtml = '';
+        marketplaceProperties.forEach(prop => {
+            const fundingProgress = (((prop.totalTokens - prop.availableTokens) / prop.totalTokens) * 100).toFixed(1);
+            marketplaceHtml += `
+                <div class="bg-navy-muted rounded-xl border border-border-dark overflow-hidden group hover:border-primary/50 transition-all flex flex-col">
+                    <div class="h-48 overflow-hidden relative border-b border-border-dark">
+                        <img src="${prop.image}" alt="${prop.title}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"/>
+                        <span class="absolute top-3 right-3 bg-navy-deep/80 backdrop-blur-md text-primary text-[10px] font-extrabold px-2.5 py-1 rounded-lg border border-primary/20 uppercase tracking-widest">${prop.expectedYield}% Expected Yield</span>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h5 class="font-extrabold text-base text-white group-hover:text-primary transition-colors">${prop.title}</h5>
+                            <p class="text-slate-400 text-xs flex items-center gap-1 mt-1">
+                                <span class="material-symbols-outlined text-xs text-primary">location_on</span>
+                                ${prop.location}
+                            </p>
+                            
+                            <div class="mt-4 grid grid-cols-2 gap-4 bg-navy-deep p-3 rounded-lg border border-border-dark">
+                                <div>
+                                    <p class="text-[9px] text-slate-500 uppercase font-bold">Property Value</p>
+                                    <p class="font-extrabold text-white text-sm">$${prop.price.toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[9px] text-slate-500 uppercase font-bold">Token Cost</p>
+                                    <p class="font-extrabold text-primary text-sm">$${prop.tokenPrice.toFixed(2)}</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <div class="flex justify-between text-[10px] text-slate-400 font-bold mb-1">
+                                    <span>Token Funding</span>
+                                    <span>${fundingProgress}% Sold</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-navy-deep rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary rounded-full" style="width: ${fundingProgress}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="openPurchase('${prop._id}')" class="w-full bg-primary hover:bg-primary-dark text-navy-deep font-bold py-2.5 rounded-xl transition-all text-xs uppercase tracking-wider mt-5 shadow-md shadow-primary/10">
+                            Deploy Capital
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        // Inject Content
+        container.innerHTML = `
+            <!-- KPI Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-navy-muted p-6 rounded-xl border border-border-dark shadow-sm">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-slate-400 text-sm font-medium">Total Real Estate Value</p>
+                        <span class="material-symbols-outlined text-primary">domain</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <h3 class="text-2xl font-extrabold text-white">$${totalREValue.toLocaleString()}</h3>
+                        <span class="text-success text-xs font-bold flex items-center">
+                            <span class="material-symbols-outlined text-xs">trending_up</span> ${appreciationPercent}%
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 italic">Portfolio allocation: ${allocationPercent}%</p>
+                </div>
+                <div class="bg-navy-muted p-6 rounded-xl border border-border-dark shadow-sm">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-slate-400 text-sm font-medium">Monthly Rental Income</p>
+                        <span class="material-symbols-outlined text-primary">payments</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <h3 class="text-2xl font-extrabold text-success">+$${monthlyRental.toLocaleString()}</h3>
+                        <span class="text-success text-xs font-bold flex items-center">
+                            <span class="material-symbols-outlined text-xs">trending_up</span> 12.4%
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 italic">Avg. Yield: ${portfolio.averageYield || 8.1}% APY</p>
+                </div>
+                <div class="bg-navy-muted p-6 rounded-xl border border-border-dark shadow-sm">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-slate-400 text-sm font-medium">Total Appreciation</p>
+                        <span class="material-symbols-outlined text-primary">show_chart</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <h3 class="text-2xl font-extrabold text-white">+$${totalAppreciation.toLocaleString()}</h3>
+                        <span class="text-slate-500 text-xs font-medium uppercase tracking-wider">Unrealized</span>
+                    </div>
+                    <div class="w-full bg-navy-deep h-1.5 rounded-full mt-3 overflow-hidden">
+                        <div class="bg-primary h-full" style="width: ${Math.min(100, (totalAppreciation / (totalREValue - totalAppreciation || 1)) * 100)}%"></div>
+                    </div>
+                </div>
+                <div class="bg-navy-muted p-6 rounded-xl border border-border-dark shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-slate-400 text-sm font-medium">Holdings Count</p>
+                        <span class="material-symbols-outlined text-primary">location_city</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <h3 class="text-2xl font-extrabold text-white">${String(propertyCount).padStart(2, '0')}</h3>
+                        <span class="text-slate-500 text-xs font-medium uppercase tracking-wider">Properties</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 italic">Global Diversification Active</p>
+                </div>
+            </div>
+            
+            <!-- Property Holdings Ledger -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-xl font-extrabold text-white">Active Shareholdings</h4>
+                    <button id="invest-more-btn" class="flex items-center gap-2 bg-primary hover:bg-primary-dark text-navy-deep px-4.5 py-2 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-primary/10">
+                        <span class="material-symbols-outlined text-base">add_circle</span>
+                        Propose Share
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    ${propertiesHtml}
+                </div>
+            </div>
+
+            <!-- Marketplace Fractional Listings -->
+            <div class="mb-8 border-t border-border-dark pt-8">
+                <h4 class="text-xl font-extrabold text-white mb-6">Marketplace Fractionals</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    ${marketplaceHtml}
+                </div>
+            </div>
+            
+            <!-- Rental Payout History Ledger -->
+            <div class="bg-navy-muted p-6 rounded-xl border border-border-dark shadow-sm overflow-hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <h4 class="font-extrabold text-white">Rental Distribution Ledger</h4>
+                    <button class="text-primary text-xs font-bold hover:underline" id="download-report">Download Tax Report (PDF) →</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-border-dark">
+                                <th class="pb-4 text-[10px] uppercase text-slate-500 font-bold tracking-widest">Payout Date</th>
+                                <th class="pb-4 text-[10px] uppercase text-slate-500 font-bold tracking-widest">Source Asset</th>
+                                <th class="pb-4 text-[10px] uppercase text-slate-500 font-bold tracking-widest text-center">Amount</th>
+                                <th class="pb-4 text-[10px] uppercase text-slate-500 font-bold tracking-widest text-center">Yield</th>
+                                <th class="pb-4 text-[10px] uppercase text-slate-500 font-bold tracking-widest text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-border-dark">
+                            ${rentalsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        // Attach event listeners
+        document.getElementById('invest-more-btn')?.addEventListener('click', () => {
+            document.getElementById('invest-modal').classList.remove('hidden');
+        });
+        
+        document.getElementById('invest-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = getAuthToken();
+            
+            if (!token) {
+                showToast('Please login first', true);
+                showLoginScreen();
+                return;
+            }
+            
+            const propertyData = {
+                name: document.getElementById('property-name').value,
+                location: {
+                    city: document.getElementById('property-location').value.split(',')[0],
+                    country: document.getElementById('property-location').value.split(',')[1] || 'Global'
+                },
+                type: document.getElementById('property-type').value,
+                investmentAmount: parseFloat(document.getElementById('investment-amount').value),
+                ownershipPercentage: parseFloat(document.getElementById('ownership-percent').value),
+                monthlyRentalIncome: parseFloat(document.getElementById('monthly-rental').value) || 0
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/properties/invest`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(propertyData)
+                });
+                
+                if (response.status === 401) {
+                    showToast('Session expired. Please login again.', true);
+                    clearAuth();
+                    showLoginScreen();
+                    return;
+                }
+                
+                if (!response.ok) throw new Error('Investment failed');
+                await response.json();
+                showToast(`Successfully invested in ${propertyData.name}`);
+                document.getElementById('invest-modal').classList.add('hidden');
+                document.getElementById('invest-form').reset();
+                await loadDashboard();
+            } catch (error) {
+                showToast(error.message, true);
+            }
+        });
+        
+        document.getElementById('download-report')?.addEventListener('click', () => {
+            showToast('Tax statement generation started. Processing PDF download...');
+        });
+    }
+
+    // Attach profile/logout triggers
+    document.getElementById('user-profile-btn')?.addEventListener('click', () => {
+        document.getElementById('logout-modal').classList.remove('hidden');
+    });
+    
+    document.getElementById('logout-nav-btn')?.addEventListener('click', () => {
+        document.getElementById('logout-modal').classList.remove('hidden');
+    });
+    
+    document.getElementById('confirm-logout')?.addEventListener('click', () => {
+        logout();
+        document.getElementById('logout-modal').classList.add('hidden');
+    });
+    
+    // Initialize app
+    async function init() {
+        const token = getAuthToken();
+        const storedUser = getUserData();
+        
+        // Inject token into leaf links if logged in
+        if (token) {
+            const leafLink = document.getElementById('leaf-terminal-link');
+            if (leafLink) leafLink.href = `/leaf/index.html#token=${token}`;
+        }
+
+        if (token && storedUser) {
+            authToken = token;
+            currentUser = storedUser;
+            await loadDashboard();
+        } else {
+            showLoginScreen();
+        }
+    }
+    
+    init();
+</script>
+</body>
+</html>

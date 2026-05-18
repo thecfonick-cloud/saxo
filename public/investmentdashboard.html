@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>SAXOINVESTMENT | Premium Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d4af35",
+                        "primary-dark": "#b89c2e",
+                        "background-dark": "#12110a",
+                        "navy-muted": "#1c1a11",
+                        "navy-deep": "#080704",
+                        "surface-dark": "#1c1a11",
+                        "border-dark": "#2d2a1b",
+                        "success": "#10b981",
+                        "danger": "#ef4444",
+                        "warning": "#f59e0b",
+                        "info": "#3b82f6"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #12110a;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2d2a1b;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #d4af35;
+        }
+        .toast-notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            transition: all 0.2s ease;
+        }
+        .loading-spinner {
+            border: 2px solid rgba(212, 175, 53, 0.2);
+            border-top-color: #d4af35;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .modal-backdrop { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .stat-card { transition: all 0.3s ease; }
+        .stat-card:hover { transform: translateY(-2px); border-color: rgba(212, 175, 53, 0.4); box-shadow: 0 4px 20px rgba(212, 175, 53, 0.1); }
+        
+        .gradient-border {
+            background: linear-gradient(135deg, #d4af35, #b89c2e);
+            padding: 1px;
+            border-radius: 1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #d4af35, #b89c2e);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(212, 175, 53, 0.3);
+        }
+        
+        .glass-effect {
+            background: rgba(28, 26, 17, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 53, 0.2);
+        }
+        
+        .transactions-container { max-height: 400px; overflow-y: auto; }
+        .holdings-container { max-height: 300px; overflow-y: auto; }
+        .profit-positive { color: #10b981; }
+        .profit-negative { color: #ef4444; }
+
+        /* Slide-out Menu Styles */
+        .slide-menu {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100vh;
+            background: #080704;
+            border-right: 1px solid #2d2a1b;
+            z-index: 1000;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+        }
+        .slide-menu.open { left: 0; }
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .menu-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        @media (max-width: 768px) {
+            .holdings-container { max-height: 260px; }
+            .transactions-container { max-height: 320px; }
+        }
+        @media (max-width: 640px) {
+            .custom-scrollbar::-webkit-scrollbar { width: 2px; }
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 font-display antialiased">
+<div class="flex h-screen overflow-hidden">
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-background-dark">
+        <!-- Header with Hamburger Menu -->
+        <header class="h-auto md:h-16 flex flex-wrap items-center justify-between px-4 sm:px-6 md:px-8 py-3 md:py-0 bg-navy-deep/90 border-b border-border-dark backdrop-blur-md z-20 sticky top-0 gap-3">
+            <!-- Left side: Logo + Hamburger (visible on small screens) -->
+            <div class="flex items-center gap-3">
+                <!-- Hamburger Menu Button (mobile only) -->
+                <button id="menu-toggle" class="md:hidden flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all">
+                    <span class="material-symbols-outlined text-xl">menu</span>
+                </button>
+                
+                <div class="gradient-border">
+                    <div class="bg-navy-deep p-2 rounded-xl">
+                        <span class="material-symbols-outlined text-primary text-2xl font-bold">account_balance</span>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-slate-100 text-xl font-bold leading-none">SAXO<span class="text-primary font-light">INVESTMENT</span></h1>
+                    <p class="text-primary text-[10px] font-medium uppercase tracking-wider mt-0.5">Premium Trading Hub</p>
+                </div>
+            </div>
+            
+            <!-- Center Navigation: Premium Platforms -->
+            <div class="hidden lg:flex items-center gap-6 text-sm font-semibold pl-6 border-l border-border-dark">
+                <a href="investmentdashboard.html" class="text-primary flex items-center gap-1.5 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-lg">dashboard</span>
+                    Dashboard
+                </a>
+                <a href="realestatedashboard.html" class="text-slate-300 flex items-center gap-1.5 hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-lg">domain</span>
+                    Real Estate Hub
+                </a>
+                <a id="leaf-terminal-link" href="/leaf/index.html" target="_blank" class="text-slate-300 flex items-center gap-1.5 hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-lg">monitoring</span>
+                    LEAF Pro Terminal
+                </a>
+            </div>
+            
+            <!-- Desktop Navigation (visible on medium screens and up) -->
+            <div class="hidden md:flex flex-wrap items-center gap-2 sm:gap-3">
+                <button id="transfer-btn" class="flex items-center gap-1 sm:gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all border border-primary/20">
+                    <span class="material-symbols-outlined text-base sm:text-lg">send_money</span>
+                    <span>Send</span>
+                </button>
+                <button id="deposit-btn-header" class="btn-primary px-4 sm:px-5 py-1.5 sm:py-2 rounded-lg text-navy-deep font-bold text-xs sm:text-sm transition-all whitespace-nowrap">
+                    <span class="material-symbols-outlined text-base sm:text-lg align-middle">add</span>
+                    <span class="align-middle">Deposit</span>
+                </button>
+                <button id="withdraw-btn-header" class="bg-navy-muted hover:bg-border-dark text-slate-300 px-4 sm:px-5 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all border border-border-dark whitespace-nowrap">
+                    <span class="material-symbols-outlined text-base sm:text-lg align-middle">remove</span>
+                    <span class="align-middle">Withdraw</span>
+                </button>
+                <div class="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-border-dark">
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border border-primary/20">
+                            <span class="material-symbols-outlined text-primary text-xs sm:text-sm">person</span>
+                        </div>
+                        <div class="overflow-hidden hidden xs:flex flex-col">
+                            <p class="text-xs sm:text-sm font-semibold truncate text-slate-100" id="user-name-display">Loading...</p>
+                            <p class="text-[10px] sm:text-xs text-primary truncate" id="user-tier-display">Loading...</p>
+                        </div>
+                    </div>
+                    <button id="logout-btn" class="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-slate-400 hover:text-danger hover:bg-danger/10 transition-all">
+                        <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
+                        <span class="hidden sm:inline">Logout</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile: User avatar (visible on mobile) -->
+            <div class="flex md:hidden items-center gap-2">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border border-primary/20">
+                        <span class="material-symbols-outlined text-primary text-sm">person</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Overlay for slide menu -->
+        <div id="menu-overlay" class="menu-overlay"></div>
+
+        <!-- Slide-out Menu (Mobile) -->
+        <div id="slide-menu" class="slide-menu">
+            <div class="p-4 border-b border-border-dark">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border border-primary/20">
+                            <span class="material-symbols-outlined text-primary text-lg">person</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-slate-100" id="mobile-user-name">Loading...</p>
+                            <p class="text-xs text-primary" id="mobile-user-tier">Loading...</p>
+                        </div>
+                    </div>
+                    <button id="close-menu" class="text-slate-400 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+            </div>
+            
+            <nav class="p-4 space-y-2">
+                <a href="investmentdashboard.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-primary transition-all">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span class="font-medium">Dashboard</span>
+                </a>
+                <a href="realestatedashboard.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-navy-muted transition-all">
+                    <span class="material-symbols-outlined">domain</span>
+                    <span class="font-medium">Real Estate Hub</span>
+                </a>
+                <a id="mobile-leaf-link" href="/leaf/index.html" target="_blank" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-navy-muted transition-all">
+                    <span class="material-symbols-outlined">monitoring</span>
+                    <span class="font-medium">LEAF Pro Terminal</span>
+                </a>
+                
+                <div class="pt-4 mt-2 border-t border-border-dark space-y-2">
+                    <button id="mobile-transfer-btn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-navy-muted hover:bg-border-dark text-slate-300 transition-all border border-border-dark">
+                        <span class="material-symbols-outlined">send_money</span>
+                        <span class="font-medium">Send Money</span>
+                    </button>
+                    <button id="mobile-deposit-btn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg btn-primary text-navy-deep font-bold transition-all">
+                        <span class="material-symbols-outlined">add</span>
+                        <span>Deposit Funds</span>
+                    </button>
+                    <button id="mobile-withdraw-btn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-navy-muted hover:bg-border-dark text-slate-300 transition-all border border-border-dark">
+                        <span class="material-symbols-outlined">remove</span>
+                        <span>Withdraw Funds</span>
+                    </button>
+                </div>
+                
+                <div class="pt-4 mt-2 border-t border-border-dark">
+                    <button id="mobile-logout-btn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-danger hover:bg-danger/10 transition-all">
+                        <span class="material-symbols-outlined">logout</span>
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </nav>
+            
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-border-dark bg-navy-deep">
+                <p class="text-[10px] text-center text-slate-500">SAXOINVESTMENT Premium Exchange</p>
+                <p class="text-[9px] text-center text-slate-600 mt-1">© 2026 All rights reserved</p>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 md:p-8 space-y-6 md:space-y-8" id="dashboard-content">
+            <div class="flex justify-center items-center h-64">
+                <div class="loading-spinner"></div>
+                <span class="ml-2 text-slate-400">Loading premium terminal...</span>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modals (responsive) -->
+<div id="transferModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[10000] hidden items-center justify-center p-3 sm:p-4 modal-backdrop" onclick="closeTransferModal(event)">
+    <div class="bg-navy-muted rounded-2xl max-w-md w-full max-h-[90vh] border border-primary/20 shadow-2xl flex flex-col" onclick="event.stopPropagation()">
+        <div class="p-4 sm:p-6 border-b border-border-dark flex-shrink-0">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg sm:text-xl font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">send_money</span>Send Money</h3>
+                <button onclick="closeTransferModal()" class="text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            <p class="text-slate-400 text-xs sm:text-sm mt-1">Transfer funds to another SAXOINVESTMENT user</p>
+        </div>
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 space-y-4 sm:space-y-5">
+            <div><label class="block text-sm font-medium text-slate-300 mb-2">Recipient Email</label><div class="flex gap-2"><input type="email" id="transfer-email" class="flex-1 bg-navy-deep border border-border-dark rounded-xl px-4 py-2 text-slate-200 focus:ring-primary focus:border-primary text-sm" placeholder="user@example.com"><button id="search-user-btn" class="bg-primary/20 hover:bg-primary/30 text-primary px-4 py-2 rounded-xl transition-colors"><span class="material-symbols-outlined text-xl">search</span></button></div><div id="search-result" class="mt-3 hidden"></div></div>
+            <div id="transfer-amount-section" class="hidden"><label class="block text-sm font-medium text-slate-300 mb-2">Amount to Send</label><div class="relative"><span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-400">$</span><input type="number" id="transfer-amount" class="w-full bg-navy-deep border border-border-dark rounded-xl py-3 sm:py-4 pl-10 pr-4 text-xl sm:text-2xl font-bold text-slate-200 focus:ring-primary focus:border-primary" placeholder="0.00" step="100"></div><div class="flex justify-between mt-2"><span class="text-xs text-slate-500">Available: <span id="available-balance-transfer">$0.00</span></span><button id="max-amount-btn" class="text-xs text-primary hover:underline">Send Max</button></div></div>
+            <div id="transfer-note-section" class="hidden"><label class="block text-sm font-medium text-slate-300 mb-2">Note (Optional)</label><textarea id="transfer-note" rows="2" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2 text-slate-200 focus:ring-primary focus:border-primary resize-none"></textarea></div>
+            <div id="transfer-confirm-section" class="hidden"><div class="bg-primary/5 rounded-xl p-4 border border-primary/20"><div class="flex justify-between items-center mb-2"><span class="text-slate-400 text-sm">Recipient</span><span class="font-semibold text-sm" id="confirm-recipient">-</span></div><div class="flex justify-between items-center mb-2"><span class="text-slate-400 text-sm">Amount</span><span class="font-bold text-primary text-base sm:text-lg" id="confirm-amount">$0.00</span></div><div class="flex justify-between items-center"><span class="text-slate-400 text-sm">Fee</span><span class="text-success text-sm">Free</span></div></div></div>
+        </div>
+        <div class="flex gap-3 p-4 sm:p-6 pt-0 border-t border-border-dark flex-shrink-0"><button id="transfer-cancel-btn" class="flex-1 px-4 py-2 border border-border-dark rounded-xl text-slate-300 hover:bg-border-dark transition-colors text-sm">Cancel</button><button id="transfer-submit-btn" class="flex-1 bg-primary hover:bg-primary/90 text-navy-deep font-bold py-2 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm" disabled>Send Money</button></div>
+    </div>
+</div>
+
+<div id="depositModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[10000] hidden items-center justify-center p-3 sm:p-4 modal-backdrop" onclick="closeDepositModal(event)"><div class="bg-navy-muted rounded-2xl max-w-md w-full border border-primary/20 shadow-2xl" onclick="event.stopPropagation()"><div class="p-4 sm:p-6 border-b border-border-dark"><div class="flex justify-between items-center"><h3 class="text-lg sm:text-xl font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">add_circle</span>Deposit Funds</h3><button onclick="closeDepositModal()" class="text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">close</span></button></div></div><div class="p-4 sm:p-6 space-y-5"><div><label class="block text-sm font-medium text-slate-300 mb-2">Amount (USD)</label><div class="relative"><span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-400">$</span><input type="number" id="deposit-amount" class="w-full bg-navy-deep border border-border-dark rounded-xl py-3 sm:py-4 pl-10 pr-4 text-xl sm:text-2xl font-bold text-slate-200 focus:ring-primary focus:border-primary" placeholder="0.00" min="10" step="100"></div></div><div><label class="block text-sm font-medium text-slate-300 mb-2">Payment Method</label><select id="deposit-method" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-3 text-slate-200 focus:ring-primary focus:border-primary text-sm"><option value="Bank Transfer">Bank Transfer (Instant)</option><option value="Credit Card">Credit Card (2.5% fee)</option><option value="Crypto">Crypto (USDT)</option></select></div><button id="deposit-submit-btn" class="w-full btn-primary text-navy-deep font-bold py-3 rounded-xl transition-all">Deposit Now</button></div></div></div>
+
+<div id="withdrawModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[10000] hidden items-center justify-center p-3 sm:p-4 modal-backdrop" onclick="closeWithdrawModal(event)"><div class="bg-navy-muted rounded-2xl max-w-md w-full border border-primary/20 shadow-2xl" onclick="event.stopPropagation()"><div class="p-4 sm:p-6 border-b border-border-dark"><div class="flex justify-between items-center"><h3 class="text-lg sm:text-xl font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">remove_circle</span>Withdraw Funds</h3><button onclick="closeWithdrawModal()" class="text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">close</span></button></div></div><div class="p-4 sm:p-6 space-y-5"><div><label class="block text-sm font-medium text-slate-300 mb-2">Amount (USD)</label><div class="relative"><span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-slate-400">$</span><input type="number" id="withdraw-amount" class="w-full bg-navy-deep border border-border-dark rounded-xl py-3 sm:py-4 pl-10 pr-4 text-xl sm:text-2xl font-bold text-slate-200 focus:ring-primary focus:border-primary" placeholder="0.00" min="10" step="100"></div><div class="flex justify-between mt-2"><span class="text-xs text-slate-500">Available: <span id="available-balance-withdraw">$0.00</span></span><button id="withdraw-max-btn" class="text-xs text-primary hover:underline">Withdraw Max</button></div></div><div><label class="block text-sm font-medium text-slate-300 mb-2">Withdrawal Method</label><select id="withdraw-method" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-3 text-slate-200 focus:ring-primary focus:border-primary text-sm"><option value="bank">Bank Transfer (1-3 business days)</option><option value="crypto">Crypto (Instant - USDT)</option><option value="wire">Wire Transfer (2-5 business days)</option></select></div><button id="withdraw-submit-btn" class="w-full btn-primary text-navy-deep font-bold py-3 rounded-xl transition-all">Request Withdrawal</button></div></div></div>
+
+<div id="transferSuccessModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[10001] hidden items-center justify-center p-4 modal-backdrop"><div class="bg-navy-muted rounded-2xl max-w-sm w-full border border-success/20 text-center p-4 sm:p-6"><div class="w-14 h-14 sm:w-16 sm:h-16 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-4"><span class="material-symbols-outlined text-success text-3xl">check_circle</span></div><h3 class="text-lg sm:text-xl font-bold mb-2">Transfer Complete!</h3><p class="text-slate-400 text-sm mb-4">Your money has been sent successfully.</p><div class="bg-navy-deep rounded-xl p-3 mb-4"><p class="text-xs text-slate-500">Amount Sent</p><p class="text-xl sm:text-2xl font-bold text-primary" id="success-amount">$0.00</p><p class="text-xs text-slate-500 mt-1" id="success-recipient">To: -</p></div><button onclick="closeTransferSuccessModal()" class="w-full btn-primary text-navy-deep font-bold py-2 rounded-xl transition-all">Done</button></div></div>
+
+<div id="allTransactionsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[10000] hidden items-center justify-center p-3 sm:p-4 modal-backdrop" onclick="closeAllTransactionsModal(event)"><div class="bg-navy-muted rounded-2xl max-w-4xl w-full max-h-[85vh] border border-primary/20 shadow-2xl flex flex-col" onclick="event.stopPropagation()"><div class="p-4 sm:p-6 border-b border-border-dark flex-shrink-0"><div class="flex justify-between items-center"><h3 class="text-lg sm:text-xl font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">history</span>All Transactions</h3><button onclick="closeAllTransactionsModal()" class="text-slate-400 hover:text-primary transition-colors"><span class="material-symbols-outlined">close</span></button></div></div><div class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6" id="all-transactions-list"></div></div></div>
+
+<div id="toast" class="toast-notification bg-navy-deep border border-primary/30 rounded-xl px-4 py-3 shadow-xl flex items-center gap-3 hidden"><span class="material-symbols-outlined text-primary text-lg sm:text-base">info</span><span id="toast-message" class="text-xs sm:text-sm text-slate-200"></span></div>
+
+<script>
+    const API_BASE = window.location.origin + '/api';
+    let currentUser = null, portfolioData = null, transactions = [], watchlistData = [], holdingsData = [], selectedRecipient = null, transferListenersSetup = false;
+    const STATIC_ASSETS = [
+        { symbol: 'AAPL', name: 'Apple Inc.', price: 185.50, changePercent: 0.45 }, { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 138.42, changePercent: -0.85 },
+        { symbol: 'NVDA', name: 'NVIDIA Corporation', price: 922.20, changePercent: 2.80 }, { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 181.30, changePercent: 0.90 },
+        { symbol: 'MSFT', name: 'Microsoft Corporation', price: 421.90, changePercent: -0.35 }, { symbol: 'TSLA', name: 'Tesla Inc.', price: 174.80, changePercent: -1.25 },
+        { symbol: 'BTC', name: 'Bitcoin', price: 67500.00, changePercent: 2.50 }, { symbol: 'ETH', name: 'Ethereum', price: 3520.00, changePercent: 1.20 },
+        { symbol: 'SOL', name: 'Solana', price: 168.00, changePercent: -0.50 }, { symbol: 'BNB', name: 'Binance Coin', price: 605.00, changePercent: 0.80 },
+        { symbol: 'XRP', name: 'Ripple', price: 0.54, changePercent: -1.10 }, { symbol: 'GOLD', name: 'Gold', price: 2320.50, changePercent: 0.35 }
+    ];
+
+    function showToast(message, isError = false) { const toast = document.getElementById('toast'); const toastMsg = document.getElementById('toast-message'); toastMsg.innerText = message; toast.classList.remove('hidden'); if (isError) { toast.style.borderColor = '#ef4444'; toast.querySelector('.material-symbols-outlined').style.color = '#ef4444'; } else { toast.style.borderColor = '#d4af35'; toast.querySelector('.material-symbols-outlined').style.color = '#d4af35'; } setTimeout(() => toast.classList.add('hidden'), 3000); }
+    function getAuthToken() { return localStorage.getItem('auth_token') || localStorage.getItem('token'); }
+    function setAuthToken(token) { if (token) { localStorage.setItem('auth_token', token); localStorage.setItem('token', token); } else { localStorage.removeItem('auth_token'); localStorage.removeItem('token'); } }
+    function setUserData(user) { if (user) { localStorage.setItem('user_data', JSON.stringify(user)); localStorage.setItem('user', JSON.stringify(user)); } else { localStorage.removeItem('user_data'); localStorage.removeItem('user'); } }
+    function getUserData() { const userStr = localStorage.getItem('user_data') || localStorage.getItem('user'); return userStr ? JSON.parse(userStr) : null; }
+    function clearAuth() { localStorage.removeItem('auth_token'); localStorage.removeItem('token'); localStorage.removeItem('user_data'); localStorage.removeItem('user'); currentUser = null; portfolioData = null; transactions = []; watchlistData = []; holdingsData = []; }
+    function logout() { clearAuth(); window.location.href = 'join.html'; }
+
+    async function fetchDashboardData() { const token = getAuthToken(); if (!token) { window.location.href = 'join.html'; return; } try { const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }; const [userRes, portfolioRes, transactionsRes, watchlistRes, holdingsRes] = await Promise.all([ fetch(`${API_BASE}/user/profile`, { headers }), fetch(`${API_BASE}/portfolio/summary`, { headers }), fetch(`${API_BASE}/transactions/recent`, { headers }), fetch(`${API_BASE}/watchlist`, { headers }), fetch(`${API_BASE}/portfolio/holdings`, { headers }) ]); if (userRes.status === 401 || portfolioRes.status === 401) { showToast('Session expired. Please login again.', true); clearAuth(); window.location.href = 'join.html'; return; } currentUser = await userRes.json(); portfolioData = await portfolioRes.json(); transactions = await transactionsRes.json(); watchlistData = await watchlistRes.json(); holdingsData = await holdingsRes.json(); document.getElementById('user-name-display').innerText = currentUser?.fullName || 'User'; document.getElementById('user-tier-display').innerText = currentUser?.memberTier || 'Member'; document.getElementById('mobile-user-name').innerText = currentUser?.fullName?.split(' ')[0] || 'User'; document.getElementById('mobile-user-tier').innerText = currentUser?.memberTier || 'Member'; renderDashboard(); } catch (err) { console.error(err); showErrorState(err.message); } }
+
+    async function executeTrade(assetSymbol, amountUSD, type) { const token = getAuthToken(); if (!token) { showToast('Please login to trade', true); setTimeout(() => window.location.href = 'join.html', 1500); return; } if (!STATIC_ASSETS.some(asset => asset.symbol === assetSymbol)) { showToast(`Asset ${assetSymbol} is not available`, true); return; } try { const res = await fetch(`${API_BASE}/trade`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ symbol: assetSymbol, amountUSD, type }) }); const data = await res.json(); if (res.status === 401) { showToast('Session expired.', true); clearAuth(); window.location.href = 'join.html'; return; } if (!res.ok) throw new Error(data.message || 'Trade failed'); showToast(`${type.toUpperCase()} order executed!`, false); await fetchDashboardData(); } catch (err) { showToast(err.message, true); } }
+
+    async function depositFunds(amount, method) { const token = getAuthToken(); if (!token) { showToast('Please login', true); setTimeout(() => window.location.href = 'join.html', 1500); return; } try { const res = await fetch(`${API_BASE}/user/deposit`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ amount, method }) }); const data = await res.json(); if (res.status === 401) { clearAuth(); window.location.href = 'join.html'; return; } if (!res.ok) throw new Error(data.message); showToast(`Successfully deposited $${amount}`, false); await fetchDashboardData(); closeDepositModal(); } catch (err) { showToast(err.message, true); } }
+
+    async function withdrawFunds(amount, method) { const token = getAuthToken(); if (!token) { showToast('Please login', true); setTimeout(() => window.location.href = 'join.html', 1500); return; } if (amount > currentUser.buyingPower) { showToast('Insufficient funds', true); return; } try { const res = await fetch(`${API_BASE}/user/withdraw-request`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ amount, method, methodName: method }) }); const data = await res.json(); if (res.status === 401) { clearAuth(); window.location.href = 'join.html'; return; } if (!res.ok) throw new Error(data.message); showToast(`Withdrawal request submitted for $${amount}`, false); await fetchDashboardData(); closeWithdrawModal(); } catch (err) { showToast(err.message, true); } }
+
+    async function searchUserByEmail(email) { try { const token = getAuthToken(); if (!token) { window.location.href = 'join.html'; return null; } const response = await fetch(`${API_BASE}/user/search-user?email=${encodeURIComponent(email)}`, { headers: { 'Authorization': `Bearer ${token}` } }); const data = await response.json(); if (!response.ok) throw new Error(data.message || 'User not found'); return data.user; } catch (error) { showToast(error.message, true); return null; } }
+    async function sendMoney(recipientEmail, amount, note) { try { const token = getAuthToken(); if (!token) { window.location.href = 'join.html'; return; } const response = await fetch(`${API_BASE}/user/send-money`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ recipientEmail, amount, note }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message || 'Transfer failed'); return data; } catch (error) { showToast(error.message, true); throw error; } }
+    
+    function openTransferModal() { document.getElementById('transferModal').classList.remove('hidden'); document.getElementById('transferModal').style.display = 'flex'; resetTransferModal(); updateAvailableBalance(); }
+    function closeTransferModal(event) { if (!event || event.target === document.getElementById('transferModal') || !event) { document.getElementById('transferModal').classList.add('hidden'); document.getElementById('transferModal').style.display = 'none'; resetTransferModal(); } }
+    function closeTransferSuccessModal() { document.getElementById('transferSuccessModal').classList.add('hidden'); document.getElementById('transferSuccessModal').style.display = 'none'; }
+    function openDepositModal() { window.location.href = 'deposit.html'; }
+    function closeDepositModal(event) {}
+    function openWithdrawModal() { window.location.href = 'withdraw.html'; }
+    function closeWithdrawModal(event) {}
+    function openAllTransactionsModal() { const modal = document.getElementById('allTransactionsModal'); const container = document.getElementById('all-transactions-list'); let html = ''; if (transactions && transactions.length > 0) { transactions.forEach(tx => { const statusClass = tx.status === 'Completed' ? 'bg-success/10 text-success border-success/20' : 'bg-warning/10 text-warning border-warning/20'; const typeClass = tx.type === 'Buy' ? 'text-success' : (tx.type === 'Sell' ? 'text-danger' : 'text-primary'); const amountValue = tx.amountUSD || tx.amount || 0; const displayAmount = `$${amountValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; html += `<div class="border-b border-border-dark/50 hover:bg-primary/5 transition-colors p-3 sm:p-4"><div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2"><div class="flex items-center gap-3 flex-1 min-w-0"><div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary text-xs">${tx.type === 'Transfer' ? '↗' : (tx.type === 'Deposit' ? '💰' : (tx.symbol || '---'))}</div><div class="flex-1 min-w-0"><p class="font-semibold text-slate-200 text-sm truncate">${(tx.description || 'Transaction').substring(0, 50)}</p><p class="text-xs text-slate-500 mt-1">${tx.date || new Date(tx.timestamp).toLocaleString()}</p></div></div><div class="text-right"><p class="font-bold ${typeClass} text-sm">${displayAmount}</p><p class="text-xs ${typeClass} mt-1">${tx.type}</p></div><div><span class="${statusClass} px-2 py-1 rounded-lg text-xs font-medium border">${tx.status}</span></div></div></div>`; }); } else { html = '<div class="text-center text-slate-400 py-8">No transactions found</div>'; } container.innerHTML = html; modal.classList.remove('hidden'); modal.style.display = 'flex'; }
+    function closeAllTransactionsModal(event) { if (!event || event.target === document.getElementById('allTransactionsModal') || !event) { document.getElementById('allTransactionsModal').classList.add('hidden'); document.getElementById('allTransactionsModal').style.display = 'none'; } }
+    function resetTransferModal() { const emailInput = document.getElementById('transfer-email'); const amountInput = document.getElementById('transfer-amount'); const noteInput = document.getElementById('transfer-note'); if (emailInput) emailInput.value = ''; if (amountInput) amountInput.value = ''; if (noteInput) noteInput.value = ''; document.getElementById('search-result').classList.add('hidden'); document.getElementById('transfer-amount-section').classList.add('hidden'); document.getElementById('transfer-note-section').classList.add('hidden'); document.getElementById('transfer-confirm-section').classList.add('hidden'); const submitBtn = document.getElementById('transfer-submit-btn'); if (submitBtn) submitBtn.disabled = true; selectedRecipient = null; }
+    function updateAvailableBalance() { if (currentUser) { const balanceElem = document.getElementById('available-balance-transfer'); if (balanceElem) balanceElem.textContent = `$${currentUser.buyingPower?.toLocaleString() || '0.00'}`; } }
+    
+    function setupTransferListeners() { if (transferListenersSetup) return; transferListenersSetup = true; const searchBtn = document.getElementById('search-user-btn'); const emailInput = document.getElementById('transfer-email'); const amountInput = document.getElementById('transfer-amount'); const maxBtn = document.getElementById('max-amount-btn'); const cancelBtn = document.getElementById('transfer-cancel-btn'); const submitBtn = document.getElementById('transfer-submit-btn'); const noteInput = document.getElementById('transfer-note'); if (searchBtn) searchBtn.addEventListener('click', async () => { const email = emailInput.value.trim(); if (!email) { showToast('Please enter an email address', true); return; } searchBtn.disabled = true; const originalHtml = searchBtn.innerHTML; searchBtn.innerHTML = '<div class="loading-spinner"></div>'; const user = await searchUserByEmail(email); searchBtn.disabled = false; searchBtn.innerHTML = originalHtml; if (user) { selectedRecipient = user; const resultDiv = document.getElementById('search-result'); resultDiv.innerHTML = `<div class="bg-success/10 border border-success/20 rounded-xl p-3 flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center"><span class="material-symbols-outlined text-success">account_circle</span></div><div><p class="font-semibold text-success text-sm">${user.fullName}</p><p class="text-xs text-slate-400">${user.email}</p></div></div>`; resultDiv.classList.remove('hidden'); document.getElementById('transfer-amount-section').classList.remove('hidden'); document.getElementById('transfer-note-section').classList.remove('hidden'); updateAvailableBalance(); } }); if (amountInput) amountInput.addEventListener('input', () => { const amount = parseFloat(amountInput.value) || 0; if (amount > 0 && selectedRecipient) { document.getElementById('confirm-recipient').textContent = selectedRecipient.fullName; document.getElementById('confirm-amount').textContent = `$${amount.toLocaleString()}`; document.getElementById('transfer-confirm-section').classList.remove('hidden'); if (submitBtn) submitBtn.disabled = false; } else { document.getElementById('transfer-confirm-section').classList.add('hidden'); if (submitBtn) submitBtn.disabled = true; } }); if (maxBtn) maxBtn.addEventListener('click', () => { if (currentUser && amountInput) { amountInput.value = currentUser.buyingPower; amountInput.dispatchEvent(new Event('input')); } }); if (cancelBtn) cancelBtn.addEventListener('click', () => closeTransferModal()); if (submitBtn) submitBtn.addEventListener('click', async () => { const amount = parseFloat(amountInput?.value || 0); const note = noteInput?.value || ''; if (!selectedRecipient) { showToast('Please search for a recipient first', true); return; } if (isNaN(amount) || amount <= 0) { showToast('Please enter a valid amount', true); return; } if (amount > currentUser.buyingPower) { showToast('Insufficient funds', true); return; } submitBtn.disabled = true; const originalText = submitBtn.textContent; submitBtn.innerHTML = '<div class="loading-spinner"></div> Sending...'; try { const result = await sendMoney(selectedRecipient.email, amount, note); showToast(result.message, false); document.getElementById('success-amount').textContent = `$${amount.toLocaleString()}`; document.getElementById('success-recipient').textContent = `To: ${selectedRecipient.fullName}`; document.getElementById('transferSuccessModal').classList.remove('hidden'); document.getElementById('transferSuccessModal').style.display = 'flex'; await fetchDashboardData(); closeTransferModal(); } finally { submitBtn.disabled = false; submitBtn.innerHTML = originalText; } }); }
+    
+    function showErrorState(message) { const container = document.getElementById('dashboard-content'); container.innerHTML = `<div class="flex items-center justify-center min-h-[80vh] p-4"><div class="bg-danger/10 border border-danger/30 rounded-xl p-6 max-w-md w-full text-center"><span class="material-symbols-outlined text-danger text-5xl mb-4">error</span><p class="text-danger mb-3 text-sm">⚠️ ${message}</p><p class="text-slate-400 text-xs sm:text-sm mb-4">Make sure backend server is running on http://localhost:5000</p><button id="retry-btn" class="bg-primary px-6 py-2 rounded-lg text-navy-deep font-bold hover:opacity-90 text-sm">Retry Connection</button><button id="logout-error-btn" class="ml-2 px-6 py-2 rounded-lg border border-border-dark text-slate-300 hover:bg-border-dark transition-all text-sm">Go to Login</button></div></div>`; document.getElementById('retry-btn')?.addEventListener('click', () => getAuthToken() ? fetchDashboardData() : window.location.href = 'join.html'); document.getElementById('logout-error-btn')?.addEventListener('click', () => window.location.href = 'join.html'); }
+    
+    function renderDashboard() { if (!portfolioData || !currentUser) return; const container = document.getElementById('dashboard-content'); const totalValue = portfolioData.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); const buyingPower = currentUser.buyingPower?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || '0.00'; const profitLoss = portfolioData.profitLoss30d || 0; const profitClass = profitLoss >= 0 ? 'text-success' : 'text-danger'; const profitSymbol = profitLoss >= 0 ? '+' : ''; let holdingsHtml = ''; if (holdingsData && holdingsData.length > 0) { holdingsData.forEach(holding => { const currentValue = holding.shares * holding.currentPrice; const costBasis = holding.shares * holding.averagePrice; const pnl = currentValue - costBasis; const pnlPercent = costBasis > 0 ? (pnl / costBasis) * 100 : 0; const pnlClass = pnl >= 0 ? 'text-success' : 'text-danger'; holdingsHtml += `<div class="border-b border-border-dark/50 hover:bg-primary/5 transition-colors p-3 sm:p-4"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div class="flex items-center gap-3"><div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary text-xs">${holding.symbol}</div><div><p class="font-semibold text-slate-200 text-sm">${holding.symbol}</p><p class="text-xs text-slate-500">${holding.assetName}</p></div></div><div class="flex justify-between sm:justify-end items-center sm:gap-6 flex-wrap"><div class="text-left sm:text-right"><p class="font-bold text-slate-200 text-sm">${holding.shares.toFixed(4)} shares</p><p class="text-xs text-slate-500">@ $${holding.currentPrice.toFixed(2)}</p></div><div class="text-left sm:text-right"><p class="font-bold text-slate-200 text-sm">$${currentValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p><p class="text-xs ${pnlClass}">${pnl >= 0 ? '+' : ''}$${Math.abs(pnl).toFixed(2)} (${pnlPercent.toFixed(2)}%)</p></div></div></div></div>`; }); } else { holdingsHtml = `<div class="text-center text-slate-400 py-8"><span class="material-symbols-outlined text-4xl mb-2 text-primary/50">folder_open</span><p class="text-sm text-slate-200 font-bold">Terminal Ledger Empty</p><p class="text-xs text-slate-500 mt-1">Execute a market buy order below to build positions</p></div>`; }
+        let transactionsHtml = ''; if (transactions && transactions.length > 0) { const displayTransactions = transactions.slice(0, 4); displayTransactions.forEach(tx => { const statusClass = tx.status === 'Completed' ? 'bg-success/10 text-success border-success/20' : 'bg-warning/10 text-warning border-warning/20'; const typeClass = tx.type === 'Buy' ? 'text-success' : (tx.type === 'Sell' ? 'text-danger' : 'text-primary'); const amountValue = tx.amountUSD || tx.amount || 0; const displayAmount = `$${amountValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; transactionsHtml += `<div class="border-b border-border-dark/50 hover:bg-primary/5 transition-colors p-3 sm:p-4"><div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2"><div class="flex items-center gap-3 flex-1 min-w-0"><div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/20 flex items-center justify-center font-bold text-primary text-xs">${tx.type === 'Transfer' ? '↗' : (tx.type === 'Deposit' ? '💰' : (tx.symbol || '---'))}</div><div class="flex-1 min-w-0"><p class="font-semibold text-slate-200 text-sm truncate">${(tx.description || 'Transaction').substring(0, 50)}</p><p class="text-xs text-slate-500 mt-1">${tx.date || new Date(tx.timestamp).toLocaleString()}</p></div></div><div class="text-right"><p class="font-bold ${typeClass} text-sm">${displayAmount}</p><p class="text-xs ${typeClass} mt-1">${tx.type}</p></div><div><span class="${statusClass} px-2 py-1 rounded-lg text-xs font-medium border">${tx.status}</span></div></div></div>`; }); } else { transactionsHtml = `<div class="text-center text-slate-400 py-8"><span class="material-symbols-outlined text-4xl mb-2 text-primary/50">receipt_long</span><p class="text-sm text-slate-200 font-bold">No Transaction Logs</p><p class="text-xs text-slate-500 mt-1">Deposits or trading orders will update this history ledger</p></div>`; }
+        let watchlistHtml = ''; const displayWatchlist = watchlistData.slice(0, 4); if (displayWatchlist.length > 0) { displayWatchlist.forEach(item => { const changeClass = item.changePercent >= 0 ? 'text-success' : 'text-danger'; const changeSymbol = item.changePercent >= 0 ? '+' : ''; watchlistHtml += `<div class="p-3 sm:p-4 rounded-xl border border-border-dark hover:border-primary/50 transition-all cursor-pointer group bg-navy-muted" onclick="selectAssetForTrade('${item.symbol}')"><div class="flex items-center justify-between mb-2"><span class="font-bold text-slate-200 text-sm sm:text-base group-hover:text-primary transition-colors">${item.symbol}</span><span class="${changeClass} text-xs font-bold">${changeSymbol}${Math.abs(item.changePercent).toFixed(2)}%</span></div><p class="text-lg sm:text-xl font-bold text-slate-100">$${item.price.toFixed(2)}</p><p class="text-xs text-slate-500 mt-1 truncate">${item.name}</p><div class="w-full h-1 mt-2 bg-${item.changePercent >=0 ? 'success' : 'danger'}/20 rounded-full overflow-hidden"><div class="h-full bg-${item.changePercent >=0 ? 'success' : 'danger'} rounded-full" style="width: ${Math.min(Math.abs(item.changePercent), 100)}%"></div></div></div>`; }); } else { watchlistHtml = STATIC_ASSETS.slice(0, 4).map(item => `<div class="p-3 sm:p-4 rounded-xl border border-border-dark hover:border-primary/50 transition-all cursor-pointer group bg-navy-muted" onclick="selectAssetForTrade('${item.symbol}')"><div class="flex items-center justify-between mb-2"><span class="font-bold text-slate-200 text-sm sm:text-base group-hover:text-primary transition-colors">${item.symbol}</span><span class="${item.changePercent >=0 ? 'text-success' : 'text-danger'} text-xs font-bold">${item.changePercent >=0 ? '+':''}${item.changePercent.toFixed(2)}%</span></div><p class="text-lg sm:text-xl font-bold text-slate-100">$${item.price.toFixed(2)}</p><p class="text-xs text-slate-500 mt-1 truncate">${item.name}</p></div>`).join(''); }
+        let tradeOptions = '';
+        const livePriceMap = {};
+        if (watchlistData && watchlistData.length > 0) {
+            watchlistData.forEach(item => {
+                livePriceMap[item.symbol] = item.price;
+            });
+        }
+        if (STATIC_ASSETS && STATIC_ASSETS.length > 0) {
+            tradeOptions = STATIC_ASSETS.map(asset => {
+                const livePrice = livePriceMap[asset.symbol] !== undefined ? livePriceMap[asset.symbol] : asset.price;
+                return `<option value="${asset.symbol}" data-price="${livePrice}">${asset.symbol} - ${asset.name} ($${livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</option>`;
+            }).join('');
+        } else {
+            tradeOptions = '<option value="">No assets available</option>';
+        }
+        container.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6"><div class="lg:col-span-2"><div class="gradient-border rounded-2xl"><div class="bg-navy-muted rounded-2xl p-5 sm:p-8 relative overflow-hidden group"><div class="absolute -right-20 -top-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-700"></div><div class="relative z-10"><p class="text-slate-400 text-xs sm:text-sm font-medium mb-2">Total Portfolio Value</p><div class="flex flex-wrap items-baseline gap-3"><h2 class="text-3xl sm:text-5xl font-bold text-slate-100">$${totalValue}</h2><span class="flex items-center gap-1 ${profitClass} font-semibold bg-${profitLoss>=0?'success':'danger'}/10 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm"><span class="material-symbols-outlined text-sm">${profitLoss>=0?'trending_up':'trending_down'}</span>${profitSymbol}${Math.abs(profitLoss).toFixed(2)}%</span></div><div class="mt-5 grid grid-cols-2 gap-4"><div><p class="text-slate-500 text-xs">Buying Power</p><p class="text-xl sm:text-2xl font-bold text-primary">$${buyingPower}</p></div><div><p class="text-slate-500 text-xs">Active Positions</p><p class="text-xl sm:text-2xl font-bold text-slate-100">${holdingsData.length}</p></div></div></div></div></div></div><div class="lg:col-span-1"><div class="bg-navy-muted rounded-2xl p-5 sm:p-6 border border-border-dark h-full"><div class="flex items-center justify-between mb-4 flex-wrap gap-2"><div><p class="text-slate-400 text-xs mb-1">Member Tier</p><p class="text-xl sm:text-2xl font-bold text-primary" id="member-tier-display">${currentUser?.memberTier || 'Standard'}</p></div><div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/20 flex items-center justify-center"><span class="material-symbols-outlined text-primary">${currentUser?.memberTier === 'Elite' ? 'stars' : (currentUser?.memberTier === 'Pro' ? 'trending_up' : 'account_circle')}</span></div></div><div class="mb-4"><div class="flex justify-between text-xs text-slate-500 mb-1"><span>Standard</span><span>Pro</span><span>Elite</span></div><div class="w-full h-2 bg-primary/20 rounded-full overflow-hidden"><div class="h-full bg-primary rounded-full transition-all duration-500" style="width: ${currentUser?.memberTier === 'Elite' ? '100%' : (currentUser?.memberTier === 'Pro' ? '50%' : '0%')}"></div></div></div><div class="space-y-2 mb-4 text-xs sm:text-sm">${currentUser?.memberTier === 'Standard' ? `<div class="flex items-center gap-2 text-slate-400"><span class="material-symbols-outlined text-success text-sm">check_circle</span><span>Up to $10,000 portfolio</span></div><div class="flex items-center gap-2 text-slate-400"><span class="material-symbols-outlined text-success text-sm">check_circle</span><span>Basic market research</span></div>` : currentUser?.memberTier === 'Pro' ? `<div class="flex items-center gap-2 text-slate-400"><span class="material-symbols-outlined text-success text-sm">check_circle</span><span>Up to $100,000 portfolio</span></div><div class="flex items-center gap-2 text-slate-400"><span class="material-symbols-outlined text-success text-sm">check_circle</span><span>Advanced market research</span></div><div class="flex items-center gap-2 text-slate-400"><span class="material-symbols-outlined text-success text-sm">check_circle</span><span>Priority support (12-24 hrs)</span></div><div class="flex items-center gap-2 text-slate-400"><span class="material-symbols-outlined text-success text-sm">check_circle</span><span>5% reduced trading fees</span></div>` : `<div class="flex items-center gap-2 text-slate-400"><span class="material-symbols-outlined text-success text-sm">check_circle</span><span>Unlimited portfolio value</span></div><div class="flex items-center gap-2 text-slate-400"><span class="material-symbols-outlined text-success text-sm">check_circle</span><span>Institutional-grade research</span></div><div class="flex items-center gap-2 text-slate-400"><span class="material-symbols-outlined text-success text-sm">check_circle</span><span>24/7 priority support</span></div><div class="flex items-center gap-2 text-slate-400"><span class="material-symbols-outlined text-success text-sm">check_circle</span><span>15% reduced trading fees</span></div>`}</div>${currentUser?.memberTier !== 'Elite' ? `<a href="upgrade.html" class="block w-full text-center py-2 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary font-semibold text-xs sm:text-sm transition-all border border-primary/30 mt-4"><span class="material-symbols-outlined text-sm align-middle">upgrade</span><span class="align-middle"> Upgrade to ${currentUser?.memberTier === 'Standard' ? 'Pro' : 'Elite'}</span></a>` : `<div class="w-full text-center py-2 rounded-lg bg-success/20 text-success font-semibold text-xs sm:text-sm border border-success/30 mt-4"><span class="material-symbols-outlined text-sm align-middle">verified</span><span class="align-middle"> Maximum Tier Reached</span></div>`}</div></div></div><div class="bg-navy-muted rounded-2xl border border-border-dark overflow-hidden"><div class="p-4 sm:p-6 border-b border-border-dark"><h3 class="text-base sm:text-lg font-bold text-slate-100">Your Holdings</h3><p class="text-xs text-slate-500 mt-1">Current positions and performance</p></div><div class="holdings-container">${holdingsHtml}</div></div><div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6"><div class="lg:col-span-2 bg-navy-muted rounded-2xl border border-border-dark overflow-hidden"><div class="p-4 sm:p-6 border-b border-border-dark flex flex-wrap items-center justify-between gap-2"><div><h3 class="text-base sm:text-lg font-bold text-slate-100">Recent Transactions</h3><p class="text-xs text-slate-500 mt-1">Your latest activity</p></div>${transactions && transactions.length > 4 ? `<button class="text-primary text-xs sm:text-sm font-semibold hover:underline" id="viewAllTxBtn">View All (${transactions.length}) →</button>` : ''}</div><div class="transactions-container">${transactionsHtml}</div></div><div class="bg-navy-muted rounded-2xl border border-border-dark p-4 sm:p-6"><div><h3 class="text-base sm:text-lg font-bold text-slate-100">Quick Trade</h3><p class="text-xs text-slate-500 mt-1 mb-4 sm:mb-6">Buy or sell instantly</p></div><div class="space-y-4"><div><label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Select Asset</label><select id="trade-asset-select" class="w-full bg-navy-deep border border-border-dark rounded-xl p-2.5 sm:p-3 text-sm text-slate-200 focus:ring-primary focus:border-primary">${tradeOptions}</select><p class="text-[10px] sm:text-xs text-slate-500 mt-1">${STATIC_ASSETS.length} assets available</p></div><div><label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Amount (USD)</label><input id="trade-amount" class="w-full bg-navy-deep border border-border-dark rounded-xl p-2.5 sm:p-3 text-base sm:text-lg font-bold text-slate-100 focus:ring-primary focus:border-primary" type="number" value="1000" step="100" min="10"/></div><div class="flex gap-3"><button id="trade-buy-btn" class="flex-1 py-2.5 sm:py-3 bg-success/20 text-success font-bold rounded-xl hover:bg-success/30 transition-all border border-success/30 text-sm"><span class="material-symbols-outlined text-sm align-middle">trending_up</span> Buy</button><button id="trade-sell-btn" class="flex-1 py-2.5 sm:py-3 bg-danger/20 text-danger font-bold rounded-xl hover:bg-danger/30 transition-all border border-danger/30 text-sm"><span class="material-symbols-outlined text-sm align-middle">trending_down</span> Sell</button></div></div></div></div><div class="bg-navy-muted rounded-2xl border border-border-dark p-4 sm:p-6"><div class="flex flex-wrap items-center justify-between mb-4 gap-3"><div><h3 class="text-base sm:text-lg font-bold text-slate-100">Your Watchlist</h3><p class="text-xs text-slate-500 mt-1">Your favorite assets - click to quickly trade</p></div><div class="flex gap-2"><button class="px-2 sm:px-3 py-1 text-xs font-semibold rounded-lg bg-primary/20 text-primary border border-primary/30">Tracked Assets</button></div></div><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">${watchlistHtml}</div></div>`; window.selectAssetForTrade = function(symbol) { const tradeSelect = document.getElementById('trade-asset-select'); if (tradeSelect) { for (let i = 0; i < tradeSelect.options.length; i++) { if (tradeSelect.options[i].value === symbol) { tradeSelect.selectedIndex = i; break; } } document.getElementById('trade-amount').focus(); showToast(`Selected ${symbol} for trading`, false); } }; const viewAllBtn = document.getElementById('viewAllTxBtn'); if (viewAllBtn) viewAllBtn.addEventListener('click', () => openAllTransactionsModal()); const tradeBuyBtn = document.getElementById('trade-buy-btn'); const tradeSellBtn = document.getElementById('trade-sell-btn'); const tradeAssetSelect = document.getElementById('trade-asset-select'); const tradeAmount = document.getElementById('trade-amount'); if (tradeBuyBtn) { const newTradeBuyBtn = tradeBuyBtn.cloneNode(true); tradeBuyBtn.parentNode.replaceChild(newTradeBuyBtn, tradeBuyBtn); newTradeBuyBtn.addEventListener('click', () => { const amount = parseFloat(tradeAmount?.value || 0); const symbol = tradeAssetSelect?.value; if (!symbol || symbol === '') { showToast('Please select an asset to trade', true); return; } if (!isNaN(amount) && amount >= 10 && symbol) { executeTrade(symbol, amount, 'buy'); } else { showToast('Please enter a valid amount (minimum $10)', true); } }); } if (tradeSellBtn) { const newTradeSellBtn = tradeSellBtn.cloneNode(true); tradeSellBtn.parentNode.replaceChild(newTradeSellBtn, tradeSellBtn); newTradeSellBtn.addEventListener('click', () => { const amount = parseFloat(tradeAmount?.value || 0); const symbol = tradeAssetSelect?.value; if (!symbol || symbol === '') { showToast('Please select an asset to trade', true); return; } if (!isNaN(amount) && amount >= 10 && symbol) { executeTrade(symbol, amount, 'sell'); } else { showToast('Please enter a valid amount (minimum $10)', true); } }); } setupTransferListeners(); }
+    
+    // Slide Menu Functionality
+    const menuToggle = document.getElementById('menu-toggle');
+    const closeMenu = document.getElementById('close-menu');
+    const slideMenu = document.getElementById('slide-menu');
+    const overlay = document.getElementById('menu-overlay');
+    function openMenu() { slideMenu.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+    function closeMenuFunc() { slideMenu.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; }
+    if (menuToggle) menuToggle.addEventListener('click', openMenu);
+    if (closeMenu) closeMenu.addEventListener('click', closeMenuFunc);
+    if (overlay) overlay.addEventListener('click', closeMenuFunc);
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && slideMenu.classList.contains('open')) closeMenuFunc(); });
+    
+    // Mobile/Desktop Action trigger hooks
+    document.getElementById('deposit-btn-header')?.addEventListener('click', () => openDepositModal());
+    document.getElementById('withdraw-btn-header')?.addEventListener('click', () => openWithdrawModal());
+
+    const mobileTransferBtn = document.getElementById('mobile-transfer-btn');
+    const mobileDepositBtn = document.getElementById('mobile-deposit-btn');
+    const mobileWithdrawBtn = document.getElementById('mobile-withdraw-btn');
+    const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+    if (mobileTransferBtn) mobileTransferBtn.addEventListener('click', () => { openTransferModal(); closeMenuFunc(); });
+    if (mobileDepositBtn) mobileDepositBtn.addEventListener('click', () => { openDepositModal(); closeMenuFunc(); });
+    if (mobileWithdrawBtn) mobileWithdrawBtn.addEventListener('click', () => { openWithdrawModal(); closeMenuFunc(); });
+    if (mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', () => { clearAuth(); window.location.href = 'join.html'; });
+    
+    async function init() { 
+        const token = getAuthToken(); 
+        const storedUser = getUserData(); 
+        if (token && storedUser) { 
+            currentUser = storedUser; 
+            document.getElementById('user-name-display').innerText = currentUser?.fullName || 'User'; 
+            document.getElementById('user-tier-display').innerText = currentUser?.memberTier || 'Member'; 
+            document.getElementById('mobile-user-name').innerText = currentUser?.fullName?.split(' ')[0] || 'User'; 
+            document.getElementById('mobile-user-tier').innerText = currentUser?.memberTier || 'Member'; 
+            
+            // Dynamic SSO Link Injection
+            const leafLink = document.getElementById('leaf-terminal-link');
+            const mobileLeafLink = document.getElementById('mobile-leaf-link');
+            if (leafLink) leafLink.href = `/leaf/index.html#token=${token}`;
+            if (mobileLeafLink) mobileLeafLink.href = `/leaf/index.html#token=${token}`;
+
+            await fetchDashboardData(); 
+        } else { 
+            window.location.href = 'join.html'; 
+        } 
+    }
+    document.getElementById('logout-btn')?.addEventListener('click', () => { clearAuth(); window.location.href = 'join.html'; });
+    document.getElementById('transfer-btn')?.addEventListener('click', () => openTransferModal());
+    document.getElementById('deposit-submit-btn')?.addEventListener('click', () => { const amount = parseFloat(document.getElementById('deposit-amount').value); const method = document.getElementById('deposit-method').value; if (!isNaN(amount) && amount >= 10) { depositFunds(amount, method); } else { showToast('Minimum deposit is $10', true); } });
+    document.getElementById('withdraw-submit-btn')?.addEventListener('click', () => { const amount = parseFloat(document.getElementById('withdraw-amount').value); const method = document.getElementById('withdraw-method').value; if (!isNaN(amount) && amount >= 10 && amount <= currentUser?.buyingPower) { withdrawFunds(amount, method); } else { showToast(amount > currentUser?.buyingPower ? 'Insufficient funds' : 'Minimum withdrawal is $10', true); } });
+    document.getElementById('withdraw-max-btn')?.addEventListener('click', () => { const amountInput = document.getElementById('withdraw-amount'); if (amountInput && currentUser) amountInput.value = currentUser.buyingPower; });
+    init();
+</script>
+</body>
+</html>

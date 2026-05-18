@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>SAXOINVESTMENT | Withdraw Funds</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d4af35",
+                        "primary-dark": "#b89c2e",
+                        "background-dark": "#12110a",
+                        "navy-muted": "#1c1a11",
+                        "navy-deep": "#080704",
+                        "surface-dark": "#1c1a11",
+                        "border-dark": "#2d2a1b",
+                        "success": "#10b981",
+                        "danger": "#ef4444",
+                        "warning": "#f59e0b",
+                        "info": "#3b82f6"
+                    },
+                    fontFamily: { "display": ["Inter"] },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #12110a; }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2d2a1b;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #d4af35;
+        }
+        .toast-notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+        }
+        .loading-spinner {
+            border: 2px solid rgba(212, 175, 53, 0.2);
+            border-top-color: #d4af35;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .btn-primary {
+            background: linear-gradient(135deg, #d4af35, #b89c2e);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(212, 175, 53, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 font-display min-h-screen">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <!-- Header with Send, Deposit, Profile, Logout -->
+    <header class="flex flex-wrap items-center justify-between px-4 md:px-10 py-3 md:py-4 bg-navy-deep border-b border-border-dark fixed top-0 left-0 right-0 z-50 gap-3 backdrop-blur-md bg-opacity-90">
+        <div class="flex items-center gap-3">
+            <div class="size-9 bg-primary rounded flex items-center justify-center text-navy-deep font-extrabold shadow-lg shadow-primary/20">
+                <span class="material-symbols-outlined font-bold text-2xl">account_balance</span>
+            </div>
+            <h2 class="text-xl font-extrabold tracking-tight text-white">SAXO<span class="text-primary font-light">INVESTMENT</span></h2>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 md:gap-3">
+            <button id="deposit-btn" class="flex items-center gap-1 md:gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-semibold text-xs md:text-sm transition-all border border-primary/20">
+                <span class="material-symbols-outlined text-base md:text-lg">add</span>
+                <span>Deposit</span>
+            </button>
+            <div class="flex items-center gap-2 md:gap-3 pl-2 md:pl-4 border-l border-border-dark">
+                <div class="flex items-center gap-2 md:gap-3">
+                    <div class="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border border-primary/20">
+                        <span class="material-symbols-outlined text-primary text-xs md:text-sm">person</span>
+                    </div>
+                    <div class="overflow-hidden hidden sm:flex flex-col">
+                        <p class="text-xs md:text-sm font-semibold truncate text-slate-100" id="user-name-display">Loading...</p>
+                        <p class="text-[10px] md:text-xs text-primary truncate" id="user-tier-display">Loading...</p>
+                    </div>
+                </div>
+                <button id="logout-btn" class="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg text-slate-400 hover:text-danger hover:bg-danger/10 transition-all">
+                    <span class="material-symbols-outlined text-base md:text-lg">logout</span>
+                    <span class="hidden sm:inline">Logout</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <main class="flex-1 overflow-y-auto bg-background-dark px-4 sm:px-6 md:px-8 py-6 md:py-8 pt-24">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-6 md:mb-8">
+                <div class="flex items-center gap-3 md:gap-4 mb-2">
+                    <button onclick="window.location.href='investmentdashboard.html'" class="flex items-center justify-center p-2 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary transition-all cursor-pointer">
+                        <span class="material-symbols-outlined text-base md:text-lg">arrow_back</span>
+                    </button>
+                    <h1 class="text-2xl md:text-3xl font-extrabold text-white">Withdraw Liquidity</h1>
+                </div>
+                <p class="text-primary/60 text-xs md:text-sm mt-1">Securely transfer funds from your SAXOINVESTMENT wallet to external bank or crypto accounts.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                <div class="lg:col-span-2 space-y-5 md:space-y-6">
+                    <section class="bg-navy-muted rounded-xl border border-border-dark p-4 md:p-6">
+                        <div class="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+                            <div class="size-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs md:text-sm">1</div>
+                            <h2 class="text-lg md:text-xl font-bold text-white">Select Destination Account</h2>
+                        </div>
+                        <div class="grid grid-cols-1 gap-3 md:gap-4">
+                            <label class="destination-option relative flex items-center gap-3 md:gap-4 p-4 rounded-xl border-2 border-primary bg-primary/5 cursor-pointer" data-method="bank" data-name="Bank Transfer">
+                                <div class="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined text-lg md:text-2xl">account_balance</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-bold text-white text-sm md:text-base">Bank Transfer</p>
+                                    <p class="text-xs text-slate-400">Withdraw directly to your linked bank account</p>
+                                </div>
+                                <div class="size-5 rounded-full border-2 border-primary flex items-center justify-center">
+                                    <div class="size-2.5 rounded-full bg-primary"></div>
+                                </div>
+                            </label>
+                            <label class="destination-option relative flex items-center gap-3 md:gap-4 p-4 rounded-xl border-2 border-border-dark bg-navy-deep hover:border-primary/50 cursor-pointer transition-all" data-method="wire" data-name="Wire Transfer">
+                                <div class="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary/80">
+                                    <span class="material-symbols-outlined text-lg md:text-2xl">payments</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-bold text-white text-sm md:text-base">Wire Transfer</p>
+                                    <p class="text-xs text-slate-400">International bank settlement wire</p>
+                                </div>
+                                <div class="size-5 rounded-full border-2 border-border-dark"></div>
+                            </label>
+                            <label class="destination-option relative flex items-center gap-3 md:gap-4 p-4 rounded-xl border-2 border-border-dark bg-navy-deep hover:border-primary/50 cursor-pointer transition-all" data-method="crypto" data-name="Crypto Wallet">
+                                <div class="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary/80">
+                                    <span class="material-symbols-outlined text-lg md:text-2xl">currency_bitcoin</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-bold text-white text-sm md:text-base">Crypto Wallet</p>
+                                    <p class="text-xs text-slate-400">Deploy to external BTC / ETH / USDT protocol address</p>
+                                </div>
+                                <div class="size-5 rounded-full border-2 border-border-dark"></div>
+                            </label>
+                        </div>
+                    </section>
+                    
+                    <!-- Dynamic Details Form -->
+                    <section id="details-section" class="bg-navy-muted rounded-xl border border-border-dark p-4 md:p-6 hidden">
+                        <div class="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+                            <div class="size-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs md:text-sm">2</div>
+                            <h2 class="text-lg md:text-xl font-bold text-white">Enter Account Details</h2>
+                        </div>
+                        <div id="details-form-container" class="space-y-3 md:space-y-4"></div>
+                    </section>
+                    
+                    <section class="bg-navy-muted rounded-xl border border-border-dark p-4 md:p-6">
+                        <div class="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+                            <div class="size-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs md:text-sm">3</div>
+                            <h2 class="text-lg md:text-xl font-bold text-white">Enter Amount</h2>
+                        </div>
+                        <div class="space-y-3 md:space-y-4">
+                            <div class="flex flex-wrap justify-between items-end mb-2 gap-2">
+                                <label class="text-xs md:text-sm font-medium text-slate-400 font-bold">Amount to Withdraw</label>
+                                <span class="text-xs md:text-sm font-medium">Available: <span class="text-primary font-bold" id="available-balance">$0.00</span></span>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-2xl md:text-3xl font-bold text-slate-400">$</span>
+                                <input id="withdraw-amount" class="w-full bg-navy-deep border border-border-dark rounded-xl py-4 md:py-6 pl-8 md:pl-12 pr-3 md:pr-4 text-2xl md:text-4xl font-black focus:ring-2 focus:ring-primary text-slate-100 placeholder-slate-700" placeholder="0.00" type="number"/>
+                            </div>
+                            <div class="grid grid-cols-4 gap-2 md:gap-3">
+                                <button class="percent-btn py-2 bg-navy-deep hover:bg-primary/20 hover:text-primary rounded-xl text-xs md:text-sm font-bold transition-all border border-border-dark text-slate-300" data-percent="0.25">25%</button>
+                                <button class="percent-btn py-2 bg-navy-deep hover:bg-primary/20 hover:text-primary rounded-xl text-xs md:text-sm font-bold transition-all border border-border-dark text-slate-300" data-percent="0.5">50%</button>
+                                <button class="percent-btn py-2 bg-navy-deep hover:bg-primary/20 hover:text-primary rounded-xl text-xs md:text-sm font-bold transition-all border border-border-dark text-slate-300" data-percent="0.75">75%</button>
+                                <button class="percent-btn py-2 bg-primary/10 border border-primary/30 text-primary rounded-xl text-xs md:text-sm font-black transition-all" data-percent="1">MAX</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                
+                <div class="space-y-5 md:space-y-6">
+                    <section class="bg-navy-muted rounded-xl border border-border-dark shadow-sm overflow-hidden">
+                        <div class="p-4 md:p-6 border-b border-border-dark bg-primary/5">
+                            <h3 class="text-base md:text-lg font-extrabold text-white">Withdrawal Summary</h3>
+                            <p class="text-[10px] md:text-xs text-slate-400">Review transfer payload</p>
+                        </div>
+                        <div class="p-4 md:p-6 space-y-3 md:space-y-4">
+                            <div class="flex justify-between items-center text-xs md:text-sm">
+                                <span class="text-slate-400">Method selected</span>
+                                <span class="font-semibold text-slate-200" id="summary-method">Bank Transfer</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs md:text-sm">
+                                <span class="text-slate-400">Amount requested</span>
+                                <span class="font-semibold text-slate-200" id="summary-amount">$0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs md:text-sm">
+                                <span class="text-slate-400">Processing Surcharge</span>
+                                <span class="text-success font-semibold">Free</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs md:text-sm">
+                                <span class="text-slate-400">Settlement Time</span>
+                                <span class="font-semibold italic text-xs md:text-sm text-slate-200" id="processing-time">1-3 Business Days</span>
+                            </div>
+                            <div class="pt-3 md:pt-4 border-t border-border-dark">
+                                <div class="flex justify-between items-center mb-4 md:mb-6">
+                                    <span class="text-sm md:text-base font-bold text-slate-300">Net payout</span>
+                                    <span class="text-xl md:text-2xl font-black text-primary" id="summary-net">$0.00</span>
+                                </div>
+                                <button id="confirm-withdraw-btn" class="w-full btn-primary text-navy-deep font-extrabold py-3.5 rounded-xl shadow-lg shadow-primary/25 transition-all uppercase tracking-wider text-xs md:text-sm">
+                                    Confirm Withdrawal Request
+                                </button>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-navy-deep flex items-center justify-center gap-1 border-t border-border-dark">
+                            <span class="material-symbols-outlined text-success text-sm">verified_user</span>
+                            <span class="text-[8px] md:text-[9px] uppercase font-bold tracking-wider text-slate-500">Secure AES-256 Settlement Connection</span>
+                        </div>
+                    </section>
+                    
+                    <div class="bg-primary/10 rounded-xl p-4 md:p-5 border border-primary/20">
+                        <div class="flex gap-2 md:gap-3">
+                            <span class="material-symbols-outlined text-primary text-base md:text-lg">info</span>
+                            <div>
+                                <h4 class="text-xs md:text-sm font-bold text-primary">Settlement Thresholds</h4>
+                                <p class="text-[10px] md:text-xs text-slate-400 mt-1" id="limit-info">Standard institutional threshold limit: $50,000.00 daily limit.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="toast" class="toast-notification bg-navy-deep border border-primary/30 rounded-xl px-4 py-3 shadow-xl flex items-center gap-3 hidden">
+    <span class="material-symbols-outlined text-primary text-sm md:text-base">info</span>
+    <span id="toast-message" class="text-xs md:text-sm text-slate-200"></span>
+</div>
+
+<script>
+    const API_BASE = window.location.origin + '/api';
+    let selectedMethod = 'bank';
+    let selectedMethodName = 'Bank Transfer';
+    let withdrawalDetails = {};
+    let currentAmount = 0;
+    let userBalance = 0;
+    let currentUser = null;
+    
+    function getAuthToken() { 
+        return localStorage.getItem('auth_token') || localStorage.getItem('token'); 
+    }
+    
+    function clearAuth() { 
+        localStorage.removeItem('auth_token'); 
+        localStorage.removeItem('token');
+        localStorage.removeItem('user_data'); 
+        localStorage.removeItem('user');
+        currentUser = null;
+    }
+    
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toast-message');
+        toastMsg.innerText = message;
+        toast.classList.remove('hidden');
+        if (isError) {
+            toast.style.borderColor = '#ef4444';
+            toast.querySelector('.material-symbols-outlined').style.color = '#ef4444';
+        } else {
+            toast.style.borderColor = '#d4af35';
+            toast.querySelector('.material-symbols-outlined').style.color = '#d4af35';
+        }
+        setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 4000);
+    }
+    
+    function getBankForm() {
+        return `
+            <div class="space-y-3 md:space-y-4">
+                <div>
+                    <label class="block text-xs md:text-sm font-medium mb-1 md:mb-2 text-slate-300">Account Holder Name</label>
+                    <input type="text" id="bank-name" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-slate-200" placeholder="John Doe" required>
+                </div>
+                <div>
+                    <label class="block text-xs md:text-sm font-medium mb-1 md:mb-2 text-slate-300">Bank Name</label>
+                    <input type="text" id="bank-name-field" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-slate-200" placeholder="Chase Bank" required>
+                </div>
+                <div>
+                    <label class="block text-xs md:text-sm font-medium mb-1 md:mb-2 text-slate-300">Account Number</label>
+                    <input type="text" id="account-number" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-slate-200" placeholder="XXXXXXXXXXXX" required>
+                </div>
+                <div>
+                    <label class="block text-xs md:text-sm font-medium mb-1 md:mb-2 text-slate-300">Routing Number</label>
+                    <input type="text" id="routing-number" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-slate-200" placeholder="XXXXXXXXX" required>
+                </div>
+                <div class="text-[10px] md:text-xs text-slate-500 mt-2">
+                    <span class="material-symbols-outlined text-[10px] md:text-xs inline align-middle text-primary">info</span>
+                    Standard ACH settlements clear within 1-3 business days
+                </div>
+            </div>
+        `;
+    }
+    
+    function getWireForm() {
+        return `
+            <div class="space-y-3 md:space-y-4">
+                <div>
+                    <label class="block text-xs md:text-sm font-medium mb-1 md:mb-2 text-slate-300">Beneficiary Name</label>
+                    <input type="text" id="beneficiary-name" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-slate-200" placeholder="John Doe" required>
+                </div>
+                <div>
+                    <label class="block text-xs md:text-sm font-medium mb-1 md:mb-2 text-slate-300">Bank Name</label>
+                    <input type="text" id="wire-bank-name" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-slate-200" placeholder="Bank Name" required>
+                </div>
+                <div>
+                    <label class="block text-xs md:text-sm font-medium mb-1 md:mb-2 text-slate-300">SWIFT/BIC Code</label>
+                    <input type="text" id="swift-code" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-slate-200" placeholder="CHASUS33" required>
+                </div>
+                <div>
+                    <label class="block text-xs md:text-sm font-medium mb-1 md:mb-2 text-slate-300">Account Number (IBAN)</label>
+                    <input type="text" id="wire-account" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-slate-200" placeholder="IBAN or Account Number" required>
+                </div>
+                <div>
+                    <label class="block text-xs md:text-sm font-medium mb-1 md:mb-2 text-slate-300">Bank Address</label>
+                    <input type="text" id="bank-address" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-slate-200" placeholder="Bank Address" required>
+                </div>
+                <div class="text-[10px] md:text-xs text-slate-500 mt-2">
+                    <span class="material-symbols-outlined text-[10px] md:text-xs inline align-middle text-primary">info</span>
+                    International SWIFT wires clear within 2-5 business days
+                </div>
+            </div>
+        `;
+    }
+    
+    function getCryptoForm() {
+        return `
+            <div class="space-y-3 md:space-y-4">
+                <div>
+                    <label class="block text-xs md:text-sm font-medium mb-1 md:mb-2 text-slate-300">Cryptocurrency Protocol</label>
+                    <select id="crypto-type" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-slate-200">
+                        <option value="BTC">Bitcoin (BTC)</option>
+                        <option value="ETH">Ethereum (ETH)</option>
+                        <option value="USDT">Tether (USDT - ERC20)</option>
+                        <option value="USDC">USD Coin (USDC - ERC20)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs md:text-sm font-medium mb-1 md:mb-2 text-slate-300">Target Address</label>
+                    <input type="text" id="wallet-address" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-slate-200" placeholder="0x... or bc1..." required>
+                </div>
+                <div>
+                    <label class="block text-xs md:text-sm font-medium mb-1 md:mb-2 text-slate-300">Network Verification Protocol</label>
+                    <select id="network" class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-slate-200">
+                        <option value="ERC20">ERC20 (Ethereum Network)</option>
+                        <option value="TRC20">TRC20 (Tron Network)</option>
+                        <option value="BEP20">BEP20 (Binance Smart Chain)</option>
+                    </select>
+                </div>
+                <div class="text-[10px] md:text-xs text-slate-500 mt-2">
+                    <span class="material-symbols-outlined text-[10px] md:text-xs inline align-middle text-primary">info</span>
+                    Block confirmations clear instantly after queue approval
+                </div>
+            </div>
+        `;
+    }
+    
+    function updateDetailsForm() {
+        const section = document.getElementById('details-section');
+        const container = document.getElementById('details-form-container');
+        
+        if (selectedMethod === 'bank') {
+            container.innerHTML = getBankForm();
+            section.classList.remove('hidden');
+            document.getElementById('processing-time').textContent = '1-3 Business Days';
+        } else if (selectedMethod === 'wire') {
+            container.innerHTML = getWireForm();
+            section.classList.remove('hidden');
+            document.getElementById('processing-time').textContent = '2-5 Business Days';
+        } else if (selectedMethod === 'crypto') {
+            container.innerHTML = getCryptoForm();
+            section.classList.remove('hidden');
+            document.getElementById('processing-time').textContent = '24 Hours (after queue approval)';
+        }
+    }
+    
+    function collectWithdrawalDetails() {
+        const details = {
+            method: selectedMethod,
+            methodName: selectedMethodName,
+            amount: currentAmount
+        };
+        
+        if (selectedMethod === 'bank') {
+            details.accountHolder = document.getElementById('bank-name')?.value || '';
+            details.bankName = document.getElementById('bank-name-field')?.value || '';
+            details.accountNumber = document.getElementById('account-number')?.value || '';
+            details.routingNumber = document.getElementById('routing-number')?.value || '';
+        } else if (selectedMethod === 'wire') {
+            details.beneficiaryName = document.getElementById('beneficiary-name')?.value || '';
+            details.bankName = document.getElementById('wire-bank-name')?.value || '';
+            details.swiftCode = document.getElementById('swift-code')?.value || '';
+            details.accountNumber = document.getElementById('wire-account')?.value || '';
+            details.bankAddress = document.getElementById('bank-address')?.value || '';
+        } else if (selectedMethod === 'crypto') {
+            details.cryptoType = document.getElementById('crypto-type')?.value || 'BTC';
+            details.walletAddress = document.getElementById('wallet-address')?.value || '';
+            details.network = document.getElementById('network')?.value || 'ERC20';
+        }
+        
+        return details;
+    }
+    
+    function validateDetails() {
+        const details = collectWithdrawalDetails();
+        
+        if (selectedMethod === 'bank') {
+            if (!details.accountHolder || !details.bankName || !details.accountNumber) {
+                showToast('Please fill in all bank account details', true);
+                return false;
+            }
+        } else if (selectedMethod === 'wire') {
+            if (!details.beneficiaryName || !details.bankName || !details.swiftCode || !details.accountNumber) {
+                showToast('Please fill in all wire transfer details', true);
+                return false;
+            }
+        } else if (selectedMethod === 'crypto') {
+            if (!details.walletAddress) {
+                showToast('Please enter your crypto wallet address', true);
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    async function getUserData() {
+        try {
+            const token = getAuthToken();
+            if (!token) {
+                window.location.href = 'join.html';
+                return;
+            }
+            
+            const profileRes = await fetch(`${API_BASE}/user/profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (profileRes.ok) {
+                const user = await profileRes.json();
+                currentUser = user;
+                userBalance = user.buyingPower || 0;
+                document.getElementById('available-balance').textContent = `$${userBalance.toLocaleString()}`;
+                document.getElementById('user-name-display').textContent = user.fullName || 'User';
+                document.getElementById('user-tier-display').textContent = user.memberTier || 'Member';
+            } else if (profileRes.status === 401) {
+                clearAuth();
+                window.location.href = 'join.html';
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            showToast('Failed to load user data', true);
+        }
+    }
+    
+    async function processWithdraw() {
+        if (currentAmount <= 0) {
+            showToast('Please enter a valid amount', true);
+            return false;
+        }
+        
+        if (currentAmount > userBalance) {
+            showToast(`Insufficient funds. Available: $${userBalance.toLocaleString()}`, true);
+            return false;
+        }
+        
+        if (!validateDetails()) {
+            return false;
+        }
+        
+        const details = collectWithdrawalDetails();
+        
+        try {
+            const token = getAuthToken();
+            const response = await fetch(`${API_BASE}/user/withdraw-request`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    amount: currentAmount,
+                    method: selectedMethod,
+                    methodName: selectedMethodName,
+                    withdrawalDetails: details
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.status === 401) {
+                clearAuth();
+                showToast('Session expired. Please login again.', true);
+                setTimeout(() => {
+                    window.location.href = 'join.html';
+                }, 1500);
+                return false;
+            }
+            
+            if (!response.ok) {
+                throw new Error(data.message || 'Withdrawal request failed');
+            }
+            
+            showToast(`✅ Withdrawal request submitted!`, false);
+            setTimeout(() => {
+                window.location.href = 'investmentdashboard.html';
+            }, 2000);
+            return true;
+        } catch (error) {
+            showToast(error.message, true);
+            return false;
+        }
+    }
+    
+    function updateSummary() {
+        document.getElementById('summary-method').textContent = selectedMethodName;
+        document.getElementById('summary-amount').textContent = `$${currentAmount.toLocaleString()}`;
+        document.getElementById('summary-net').textContent = `$${currentAmount.toLocaleString()}`;
+    }
+    
+    document.getElementById('deposit-btn')?.addEventListener('click', () => {
+        window.location.href = 'deposit.html';
+    });
+    
+    document.getElementById('logout-btn')?.addEventListener('click', () => {
+        clearAuth();
+        window.location.href = 'join.html';
+    });
+    
+    document.querySelectorAll('.destination-option').forEach(option => {
+        option.addEventListener('click', () => {
+            document.querySelectorAll('.destination-option').forEach(opt => {
+                opt.classList.remove('border-primary', 'bg-primary/5');
+                opt.classList.add('border-border-dark', 'bg-navy-deep');
+                const checkDiv = opt.querySelector('.size-5');
+                if (checkDiv) {
+                    checkDiv.innerHTML = '';
+                    checkDiv.classList.remove('border-primary');
+                    checkDiv.classList.add('border-border-dark');
+                }
+            });
+            option.classList.remove('border-border-dark', 'bg-navy-deep');
+            option.classList.add('border-primary', 'bg-primary/5');
+            const checkDiv = option.querySelector('.size-5');
+            if (checkDiv) {
+                checkDiv.innerHTML = '<div class="size-2.5 rounded-full bg-primary"></div>';
+                checkDiv.classList.remove('border-border-dark');
+                checkDiv.classList.add('border-primary');
+            }
+            selectedMethod = option.getAttribute('data-method');
+            selectedMethodName = option.getAttribute('data-name');
+            updateDetailsForm();
+            updateSummary();
+        });
+    });
+    
+    const amountInput = document.getElementById('withdraw-amount');
+    if (amountInput) {
+        amountInput.addEventListener('input', (e) => {
+            currentAmount = parseFloat(e.target.value) || 0;
+            updateSummary();
+        });
+    }
+    
+    document.querySelectorAll('.percent-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const percent = parseFloat(btn.getAttribute('data-percent'));
+            currentAmount = userBalance * percent;
+            if (amountInput) amountInput.value = currentAmount.toFixed(2);
+            updateSummary();
+        });
+    });
+    
+    const confirmBtn = document.getElementById('confirm-withdraw-btn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', async () => {
+            const btn = document.getElementById('confirm-withdraw-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<div class="loading-spinner"></div> Submitting...';
+            btn.disabled = true;
+            
+            await processWithdraw();
+            
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+    
+    getUserData();
+    updateDetailsForm();
+</script>
+</body>
+</html>

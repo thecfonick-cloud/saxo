@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>SAXOINVESTMENT | Deposit Funds</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d4af35",
+                        "primary-dark": "#b89c2e",
+                        "background-dark": "#12110a",
+                        "navy-muted": "#1c1a11",
+                        "navy-deep": "#080704",
+                        "surface-dark": "#1c1a11",
+                        "border-dark": "#2d2a1b",
+                        "success": "#10b981",
+                        "danger": "#ef4444",
+                        "warning": "#f59e0b",
+                        "info": "#3b82f6"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #12110a; }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2d2a1b;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #d4af35;
+        }
+        .toast-notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 10001;
+            transition: all 0.2s ease;
+        }
+        .loading-spinner {
+            border: 2px solid rgba(212, 175, 53, 0.2);
+            border-top-color: #d4af35;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            animation: fadeIn 0.2s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content {
+            max-width: 550px;
+            width: 100%;
+            background: #1c1a11;
+            border: 1px solid rgba(212,175,53,0.3);
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .file-upload-area {
+            border: 2px dashed rgba(212,175,53,0.4);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .file-upload-area:hover {
+            border-color: #d4af35;
+            background: rgba(212,175,53,0.05);
+        }
+        .copy-btn:active { transform: scale(0.96); }
+        .btn-primary {
+            background: linear-gradient(135deg, #d4af35, #b89c2e);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(212, 175, 53, 0.3);
+        }
+        .glass-effect {
+            background: rgba(28, 26, 17, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 53, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 font-display">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <!-- Header with Send, Withdraw, Profile, Logout -->
+    <header class="flex flex-wrap items-center justify-between px-4 md:px-10 py-3 md:py-4 bg-navy-deep border-b border-border-dark fixed top-0 left-0 right-0 z-50 gap-3 backdrop-blur-md bg-opacity-90">
+        <div class="flex items-center gap-3">
+            <div class="size-9 bg-primary rounded flex items-center justify-center text-navy-deep font-extrabold shadow-lg shadow-primary/20">
+                <span class="material-symbols-outlined font-bold text-2xl">account_balance</span>
+            </div>
+            <h2 class="text-xl font-extrabold tracking-tight text-white">SAXO<span class="text-primary font-light">INVESTMENT</span></h2>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 md:gap-3">
+            <button id="withdraw-btn" class="flex items-center gap-1 md:gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-semibold text-xs md:text-sm transition-all border border-primary/20">
+                <span class="material-symbols-outlined text-base md:text-lg">remove</span>
+                <span>Withdraw</span>
+            </button>
+            <div class="flex items-center gap-2 md:gap-3 pl-2 md:pl-4 border-l border-border-dark">
+                <div class="flex items-center gap-2 md:gap-3">
+                    <div class="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border border-primary/20">
+                        <span class="material-symbols-outlined text-primary text-xs md:text-sm">person</span>
+                    </div>
+                    <div class="overflow-hidden hidden sm:flex flex-col">
+                        <p class="text-xs md:text-sm font-semibold truncate text-slate-100" id="user-name-display">Loading...</p>
+                        <p class="text-[10px] md:text-xs text-primary truncate" id="user-tier-display">Loading...</p>
+                    </div>
+                </div>
+                <button id="logout-btn" class="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-lg text-slate-400 hover:text-danger hover:bg-danger/10 transition-all">
+                    <span class="material-symbols-outlined text-base md:text-lg">logout</span>
+                    <span class="hidden sm:inline">Logout</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <main class="flex-1 max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8 py-6 md:py-8 pt-24">
+        <div class="mb-6 md:mb-8">
+            <div class="flex items-center gap-3 md:gap-4 mb-2">
+                <button onclick="window.location.href='investmentdashboard.html'" class="flex items-center justify-center p-2 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-base md:text-lg">arrow_back</span>
+                </button>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-white">Deposit Liquidity</h1>
+            </div>
+            <p class="text-primary/60 text-xs md:text-sm mt-1">Deploy capital securely to your premium SAXOINVESTMENT trading wallet.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+            <div class="lg:col-span-2 space-y-6 md:space-y-8">
+                <section>
+                    <h3 class="text-base md:text-lg font-bold mb-3 md:mb-4 flex items-center gap-2 text-white">
+                        <span class="text-primary text-xs md:text-sm">01</span> Select Payment Method
+                    </h3>
+                    <div class="grid grid-cols-1 gap-3 md:gap-4">
+                        <div class="method-card relative group cursor-pointer border-2 border-primary rounded-xl p-4 bg-primary/5" data-method="Crypto">
+                            <div class="absolute top-2 right-2 md:top-3 md:right-3 text-primary method-check">
+                                <span class="material-symbols-outlined text-base md:text-lg">check_circle</span>
+                            </div>
+                            <div class="mb-3 bg-primary/20 w-12 h-12 rounded-lg flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary text-xl md:text-2xl">currency_bitcoin</span>
+                            </div>
+                            <p class="font-bold text-sm md:text-base text-white">Crypto Wallet</p>
+                            <p class="text-[10px] md:text-xs text-primary/60">USDT / BTC Address • Network Gas Only</p>
+                        </div>
+                    </div>
+                </section>
+                
+                <section>
+                    <h3 class="text-base md:text-lg font-bold mb-3 md:mb-4 flex items-center gap-2 text-white">
+                        <span class="text-primary text-xs md:text-sm">02</span> Enter Liquidity Amount
+                    </h3>
+                    <div class="bg-navy-muted p-4 md:p-6 rounded-xl border border-border-dark">
+                        <label class="text-[10px] md:text-xs font-bold uppercase tracking-wider text-primary/60 mb-2 block">Amount to deposit</label>
+                        <div class="flex items-center gap-2 md:gap-4">
+                            <span class="text-2xl md:text-4xl font-bold text-primary">$</span>
+                            <input id="deposit-amount" class="bg-transparent border-none text-2xl md:text-4xl font-bold focus:ring-0 w-full p-0 placeholder:text-primary/20 text-white" placeholder="0.00" type="number" value="5000.00"/>
+                        </div>
+                        <div class="mt-4 flex gap-2 flex-wrap">
+                            <button class="quick-amount px-3 md:px-4 py-1.5 rounded-full border border-border-dark bg-navy-deep text-[11px] md:text-xs font-medium hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all text-slate-300" data-amount="100">+$100</button>
+                            <button class="quick-amount px-3 md:px-4 py-1.5 rounded-full border border-border-dark bg-navy-deep text-[11px] md:text-xs font-medium hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all text-slate-300" data-amount="500">+$500</button>
+                            <button class="quick-amount px-3 md:px-4 py-1.5 rounded-full border border-border-dark bg-navy-deep text-[11px] md:text-xs font-medium hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all text-slate-300" data-amount="1000">+$1,000</button>
+                            <button class="quick-amount px-3 md:px-4 py-1.5 rounded-full border border-primary/40 bg-primary/10 text-[11px] md:text-xs font-bold text-primary" data-amount="max">Deploy Max ($100k)</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <div class="lg:col-span-1">
+                <div class="bg-navy-muted p-4 md:p-6 rounded-xl border border-border-dark sticky top-24">
+                    <h3 class="text-base md:text-lg font-bold mb-4 md:mb-6 text-white">Deposit Summary</h3>
+                    <div class="space-y-3 md:space-y-4 mb-6">
+                        <div class="flex justify-between text-xs md:text-sm">
+                            <span class="text-slate-400">Method selected</span>
+                            <span class="font-bold text-slate-200" id="summary-method">Bank Transfer</span>
+                        </div>
+                        <div class="flex justify-between text-xs md:text-sm">
+                            <span class="text-slate-400">Principal Deposit</span>
+                            <span class="font-bold text-slate-200" id="summary-amount">$5,000.00</span>
+                        </div>
+                        <div class="flex justify-between text-xs md:text-sm">
+                            <span class="text-slate-400">Processing Fee</span>
+                            <span class="font-bold text-success" id="summary-fee">$0.00</span>
+                        </div>
+                        <div class="pt-3 md:pt-4 border-t border-border-dark flex justify-between items-end">
+                            <span class="text-slate-400 font-bold uppercase text-[10px] md:text-xs tracking-widest">Aggregate Charge</span>
+                            <span class="text-xl md:text-2xl font-extrabold text-primary" id="summary-total">$5,000.00</span>
+                        </div>
+                    </div>
+                    <div class="p-3.5 rounded-xl bg-success/10 border border-success/20 mb-6 flex gap-2 md:gap-3">
+                        <span class="material-symbols-outlined text-success text-sm md:text-base">info</span>
+                        <p class="text-[11px] md:text-xs text-success/90">Verification receipt upload required. Core ledger updates instantly on approval.</p>
+                    </div>
+                    <button id="confirm-deposit-btn" class="w-full btn-primary text-navy-deep font-extrabold py-3.5 rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 text-sm md:text-base">
+                        Initiate Wallet Deposit
+                        <span class="material-symbols-outlined text-base md:text-lg">arrow_forward</span>
+                    </button>
+                    <p class="text-[9px] md:text-[10px] text-center text-slate-500 mt-4 leading-relaxed">
+                        Transaction processed securely via state-of-the-art fractional exchange pipeline.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="toast" class="toast-notification bg-navy-deep border border-primary/30 rounded-xl px-4 py-3 shadow-xl flex items-center gap-3 hidden">
+    <span class="material-symbols-outlined text-primary text-sm md:text-base">info</span>
+    <span id="toast-message" class="text-xs md:text-sm text-slate-200"></span>
+</div>
+
+<script>
+    const API_BASE = window.location.origin + '/api';
+    let selectedMethod = 'Crypto';
+    let currentAmount = 5000;
+    let currentUser = null;
+ 
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toast-message');
+        toastMsg.innerText = message;
+        toast.classList.remove('hidden');
+        if (isError) {
+            toast.style.borderColor = '#ef4444';
+            toast.querySelector('.material-symbols-outlined').style.color = '#ef4444';
+        } else {
+            toast.style.borderColor = '#d4af35';
+            toast.querySelector('.material-symbols-outlined').style.color = '#d4af35';
+        }
+        setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 4000);
+    }
+
+    function getAuthToken() { 
+        return localStorage.getItem('auth_token') || localStorage.getItem('token'); 
+    }
+    
+    function clearAuth() { 
+        localStorage.removeItem('auth_token'); 
+        localStorage.removeItem('token');
+        localStorage.removeItem('user_data'); 
+        localStorage.removeItem('user');
+        currentUser = null;
+    }
+    
+    async function getUserProfile() {
+        try {
+            const token = getAuthToken();
+            if (!token) {
+                window.location.href = 'join.html';
+                return null;
+            }
+            
+            const response = await fetch(`${API_BASE}/user/profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                currentUser = data;
+                document.getElementById('user-name-display').innerText = data.fullName || 'User';
+                document.getElementById('user-tier-display').innerText = data.memberTier || 'Member';
+                return data;
+            } else if (response.status === 401) {
+                clearAuth();
+                window.location.href = 'join.html';
+                return null;
+            }
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+            showToast('Failed to load user data', true);
+        }
+        return null;
+    }
+
+    function getPaymentDetails(method, amount) {
+        const refId = 'DEP-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        switch(method) {
+            case 'Bank Transfer':
+                return {
+                    title: 'Bank Transfer Instructions',
+                    instructions: 'Please transfer the exact amount to our premium settlement account. Use the reference ID for faster processing.',
+                    details: [
+                        { label: 'Bank Name', value: 'Global Trust Bank' },
+                        { label: 'Account Name', value: 'SAXOINVESTMENT Holdings Ltd' },
+                        { label: 'Account Number', value: '4081 2209 6789 012' },
+                        { label: 'Routing Number', value: '021000021' },
+                        { label: 'Reference ID', value: refId },
+                        { label: 'Amount', value: `$${amount.toFixed(2)} USD` }
+                    ],
+                    refId: refId
+                };
+            case 'Credit/Debit Card':
+                return {
+                    title: 'Secure Card Payment',
+                    instructions: 'Complete transfer via premium gateway or upload card statement screenshot with reference ID.',
+                    details: [
+                        { label: 'Merchant', value: 'SAXOINVESTMENT Wallet Gateway' },
+                        { label: 'Transaction Reference', value: refId },
+                        { label: 'Amount Charged', value: `$${amount.toFixed(2)}` }
+                    ],
+                    refId: refId
+                };
+            case 'Wire Transfer':
+                return {
+                    title: 'International Wire Details',
+                    instructions: 'Institutional settlement wire. Include your transaction reference ID in descriptions.',
+                    details: [
+                        { label: 'Beneficiary Name', value: 'SAXOINVESTMENT Exchange Financial' },
+                        { label: 'SWIFT Code', value: 'SAXOGLVBUS33' },
+                        { label: 'Account Number', value: '9876543210' },
+                        { label: 'Reference ID', value: refId },
+                        { label: 'Amount', value: `$${amount.toFixed(2)}` }
+                    ],
+                    refId: refId
+                };
+            case 'Crypto':
+                return {
+                    title: 'Crypto Wallet Transfer',
+                    instructions: 'Send USDT (ERC-20 Network) directly to the address below. Ensure exact amount.',
+                    details: [
+                        { label: 'Network Protocol', value: 'USDT (ERC-20)' },
+                        { label: 'Wallet Address', value: '0xD5a1a4981cE444C4b0969A966088d7179A12C78D' },
+                        { label: 'Reference ID', value: refId },
+                        { label: 'Crypto Amount', value: `${amount.toFixed(2)} USDT` }
+                    ],
+                    refId: refId
+                };
+            default:
+                return { title: 'Payment Details', instructions: 'Complete transfer', details: [], refId: null };
+        }
+    }
+
+    async function submitDepositProof(amount, method, refId, proofData, file) {
+        try {
+            const token = getAuthToken();
+            if (!token) {
+                throw new Error('Please login again');
+            }
+
+            const formData = new FormData();
+            formData.append('amount', amount);
+            formData.append('method', method);
+            formData.append('referenceId', refId);
+            formData.append('transactionId', proofData.transactionId || '');
+            formData.append('notes', proofData.notes || '');
+            
+            if (file) {
+                formData.append('proofImage', file);
+            }
+
+            const response = await fetch(`${API_BASE}/user/deposit-proof`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (response.status === 401) {
+                clearAuth();
+                throw new Error('Session expired. Please login again.');
+            }
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to submit proof');
+            }
+            
+            return data;
+        } catch (error) {
+            console.error('Submit proof error:', error);
+            throw error;
+        }
+    }
+
+    function showPaymentModal(method, amount) {
+        const detailsObj = getPaymentDetails(method, amount);
+        const modalDiv = document.createElement('div');
+        modalDiv.className = 'modal-backdrop';
+        modalDiv.id = 'payment-modal';
+        
+        let detailsHtml = '';
+        detailsObj.details.forEach(d => {
+            detailsHtml += `
+                <div class="flex flex-wrap justify-between items-center py-2.5 border-b border-border-dark gap-2">
+                    <span class="text-xs md:text-sm text-slate-400 font-semibold">${d.label}:</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs md:text-sm font-mono text-white break-all max-w-[180px] md:max-w-[220px] text-right font-bold">${d.value}</span>
+                        <button class="copy-field-btn text-primary/60 hover:text-primary transition text-xs" data-value="${d.value.replace(/"/g, '&quot;')}">
+                            <span class="material-symbols-outlined text-sm md:text-base">content_copy</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        let qrCodeHtml = '';
+        if (method === 'Crypto') {
+            qrCodeHtml = `
+                <div class="flex flex-col items-center justify-center p-4 bg-navy-deep rounded-xl border border-border-dark mb-4 gap-2">
+                    <div class="bg-white p-3 rounded-xl mb-1 shadow-lg">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=0xD5a1a4981cE444C4b0969A966088d7179A12C78D" alt="USDT QR Code" class="w-36 h-36 md:w-44 md:h-44 object-contain" />
+                    </div>
+                    <span class="text-[10px] md:text-xs text-slate-400 text-center max-w-[280px] leading-relaxed">
+                        ⚠️ Only send <strong class="text-primary font-bold">Tether USD (ERC20)</strong> assets to this address. Other assets will be lost forever.
+                    </span>
+                </div>
+            `;
+        }
+        
+        modalDiv.innerHTML = `
+            <div class="modal-content border border-primary/20">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4 border-b border-border-dark pb-3">
+                        <div>
+                            <h3 class="text-lg md:text-xl font-extrabold text-primary">${detailsObj.title}</h3>
+                            <p class="text-[10px] md:text-xs text-slate-400 mt-1">${detailsObj.instructions}</p>
+                        </div>
+                        <button id="close-modal-btn" class="text-slate-400 hover:text-primary">
+                            <span class="material-symbols-outlined text-base md:text-lg">close</span>
+                        </button>
+                    </div>
+                    
+                    ${qrCodeHtml}
+                    
+                    <div class="bg-navy-deep rounded-xl p-4 my-4 border border-border-dark">
+                        ${detailsHtml}
+                    </div>
+                    
+                    <div class="mb-4 p-3 bg-primary/5 rounded-xl border border-primary/20">
+                        <p class="text-[10px] md:text-xs text-primary/80"><strong>⚠️ Verification Required:</strong> Submit receipt copy below. Trading capital is updated instantly upon proof verification (5-15 min).</p>
+                    </div>
+                    
+                    <div class="mb-6 space-y-4">
+                        <div>
+                            <label class="block text-xs md:text-sm font-bold text-slate-300 mb-2">📸 Upload Deposit Receipt / Screenshot</label>
+                            <div class="file-upload-area rounded-xl p-5 text-center bg-navy-deep border border-border-dark" id="upload-area">
+                                <input type="file" id="proof-file" accept="image/*,.pdf" class="hidden" />
+                                <span class="material-symbols-outlined text-primary text-2xl mb-1">cloud_upload</span>
+                                <p class="text-[10px] md:text-xs text-slate-300 font-bold">Select Receipt PDF or Image</p>
+                                <div id="file-name-preview" class="text-[10px] md:text-xs text-primary mt-2 hidden font-mono"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs md:text-sm font-bold text-slate-300 mb-1.5">Transaction reference ID</label>
+                            <input type="text" id="txn-id-manual" placeholder="Enter bank transaction ID" class="w-full bg-navy-deep border border-border-dark rounded-xl p-3 text-xs md:text-sm focus:outline-none focus:border-primary text-slate-200" />
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs md:text-sm font-bold text-slate-300 mb-1.5">Notes (optional)</label>
+                            <textarea id="proof-notes" rows="2" placeholder="Any additional information..." class="w-full bg-navy-deep border border-border-dark rounded-xl p-3 text-xs md:text-sm focus:outline-none focus:border-primary text-slate-200 resize-none"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button id="cancel-payment-btn" class="flex-1 py-3 rounded-xl border border-border-dark text-slate-300 hover:bg-navy-deep font-bold transition-all text-sm">Cancel</button>
+                        <button id="final-confirm-payment" class="flex-1 bg-primary hover:bg-primary-dark text-navy-deep font-extrabold py-3 rounded-xl transition flex items-center justify-center gap-1 text-sm shadow-lg shadow-primary/20">
+                            Submit Verification Proof
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modalDiv);
+        
+        const fileInput = document.getElementById('proof-file');
+        const uploadArea = document.getElementById('upload-area');
+        const fileNamePreview = document.getElementById('file-name-preview');
+        const txnIdInput = document.getElementById('txn-id-manual');
+        const notesInput = document.getElementById('proof-notes');
+        
+        let selectedFile = null;
+        
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                fileNamePreview.textContent = `📎 ${selectedFile.name}`;
+                fileNamePreview.classList.remove('hidden');
+            }
+        });
+        
+        document.querySelectorAll('.copy-field-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const val = btn.getAttribute('data-value');
+                navigator.clipboard.writeText(val).then(() => {
+                    showToast('Copied to clipboard!', false);
+                });
+            });
+        });
+        
+        const closeModal = () => modalDiv.remove();
+        document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+        document.getElementById('cancel-payment-btn').addEventListener('click', closeModal);
+        
+        document.getElementById('final-confirm-payment').addEventListener('click', async () => {
+            const transactionId = txnIdInput.value.trim();
+            const notes = notesInput.value.trim();
+            
+            if (!selectedFile && !transactionId) {
+                showToast('Please upload receipt or enter reference ID', true);
+                return;
+            }
+            
+            const confirmBtn = document.getElementById('final-confirm-payment');
+            const originalText = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<div class="loading-spinner"></div> Submitting...';
+            confirmBtn.disabled = true;
+            
+            try {
+                const result = await submitDepositProof(
+                    amount,
+                    method,
+                    detailsObj.refId,
+                    { transactionId, notes },
+                    selectedFile
+                );
+                
+                showToast(`✅ Deposit proof submitted!`, false);
+                closeModal();
+                
+                const successModal = document.createElement('div');
+                successModal.className = 'modal-backdrop';
+                successModal.innerHTML = `
+                    <div class="modal-content text-center p-8 max-w-sm">
+                        <span class="material-symbols-outlined text-primary text-6xl">pending</span>
+                        <h3 class="text-xl md:text-2xl font-bold mt-4 text-white">Deposit Pending Review</h3>
+                        <p class="text-slate-300 text-sm mt-2">$${amount.toLocaleString()} deposit submitted.</p>
+                        <p class="text-primary/70 text-xs mt-2">Reference ID: ${detailsObj.refId}</p>
+                        <p class="text-[11px] md:text-xs text-slate-400 mt-2">Core balance updates instantly on validation.</p>
+                        <button id="close-success-modal" class="mt-6 btn-primary text-navy-deep font-extrabold py-3 px-6 rounded-xl w-full text-sm">Return to Terminal</button>
+                    </div>
+                `;
+                document.body.appendChild(successModal);
+                document.getElementById('close-success-modal').addEventListener('click', () => {
+                    successModal.remove();
+                    window.location.href = 'investmentdashboard.html';
+                });
+            } catch (error) {
+                if (error.message.includes('Session expired')) {
+                    showToast('Session expired. Please login again.', true);
+                    setTimeout(() => {
+                        window.location.href = 'join.html';
+                    }, 1500);
+                } else {
+                    showToast(error.message, true);
+                }
+                confirmBtn.innerHTML = originalText;
+                confirmBtn.disabled = false;
+            }
+        });
+    }
+    
+    function updateSummary() {
+        const fee = selectedMethod === 'Credit/Debit Card' ? currentAmount * 0.025 : 0;
+        const total = currentAmount + fee;
+        document.getElementById('summary-method').textContent = selectedMethod;
+        document.getElementById('summary-amount').textContent = `$${currentAmount.toLocaleString()}`;
+        document.getElementById('summary-fee').textContent = fee > 0 ? `$${fee.toFixed(2)}` : 'Free';
+        document.getElementById('summary-total').textContent = `$${total.toFixed(2)}`;
+    }
+    
+    document.getElementById('withdraw-btn')?.addEventListener('click', () => {
+        window.location.href = 'withdraw.html';
+    });
+    
+    document.getElementById('logout-btn')?.addEventListener('click', () => {
+        clearAuth();
+        window.location.href = 'join.html';
+    });
+    
+    document.querySelectorAll('.method-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.method-card').forEach(c => {
+                c.classList.remove('border-primary', 'bg-primary/5');
+                c.classList.add('border-border-dark', 'bg-navy-muted');
+                const check = c.querySelector('.method-check');
+                if (check) check.classList.add('hidden');
+            });
+            card.classList.remove('border-border-dark', 'bg-navy-muted');
+            card.classList.add('border-primary', 'bg-primary/5');
+            const checkIcon = card.querySelector('.method-check');
+            if (checkIcon) checkIcon.classList.remove('hidden');
+            selectedMethod = card.getAttribute('data-method');
+            updateSummary();
+        });
+    });
+    
+    const amountInput = document.getElementById('deposit-amount');
+    if (amountInput) {
+        amountInput.addEventListener('input', (e) => {
+            let val = parseFloat(e.target.value);
+            if (isNaN(val)) val = 0;
+            if (val > 100000) {
+                val = 100000;
+                amountInput.value = 100000;
+                showToast('Maximum deposit is $100,000', false);
+            }
+            currentAmount = val;
+            updateSummary();
+        });
+    }
+    
+    document.querySelectorAll('.quick-amount').forEach(btn => {
+        btn.addEventListener('click', () => {
+            let amountVal = btn.getAttribute('data-amount');
+            if (amountVal === 'max') {
+                currentAmount = 100000;
+            } else {
+                currentAmount = parseFloat(amountVal);
+            }
+            if (amountInput) amountInput.value = currentAmount;
+            updateSummary();
+        });
+    });
+    
+    const confirmBtn = document.getElementById('confirm-deposit-btn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', () => {
+            if (currentAmount <= 0) {
+                showToast('Please enter a valid deposit amount', true);
+                return;
+            }
+            if (currentAmount > 100000) {
+                showToast('Maximum deposit is $100,000', true);
+                return;
+            }
+            showPaymentModal(selectedMethod, currentAmount);
+        });
+    }
+    
+    getUserProfile();
+    updateSummary();
+</script>
+</body>
+</html>

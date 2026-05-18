@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
+<!-- Material Icons + Tailwind + Inter Font -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0,1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: { "primary": "#d4af35", "background-light": "#f8f7f6", "background-dark": "#201d12" },
+                fontFamily: { "display": ["Inter"] },
+                animation: { 'slide-up': 'slideUp 0.5s ease-out forwards', 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite' },
+                keyframes: { slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
+            }
+        }
+    }
+</script>
+<style>
+    * { -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #f8f7f6; }
+    .dark body { background: #201d12; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-flex; vertical-align: middle; align-items: center; }
+    .price-up { color: #4ade80; }
+    .price-down { color: #f87171; }
+    .flash-green { background-color: rgba(74,222,128,0.2); transition: background 0.08s; }
+    .flash-red { background-color: rgba(248,113,113,0.2); transition: background 0.08s; }
+    .market-card { transition: all 0.2s ease; }
+    .market-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -12px rgba(0,0,0,0.3); border-color: #d4af35; }
+    .new-listing-item { animation: slideFade 0.4s ease-out; }
+    @keyframes slideFade { 0% { opacity: 0; transform: translateX(-12px); } 100% { opacity: 1; transform: translateX(0); } }
+    .section-title { border-left: 5px solid #d4af35; padding-left: 1rem; }
+    @media (max-width: 640px) {
+        .market-card .material-symbols-outlined { font-size: 1.25rem; }
+        .section-title { font-size: 1.3rem; }
+    }
+</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 transition-colors duration-300">
+
+<!-- Header with Smart Button: Shows "Dashboard" if logged in, else "Start Investing" -->
+<header class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-primary/20 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16 gap-2">
+<div class="flex items-center gap-1 sm:gap-2 shrink-0">
+<span class="material-symbols-outlined tracking-tight text-slate-900 dark:text-slate-100 text-2xl sm:text-3xl">account_balance</span>
+<span class="text-sm sm:text-base md:text-xl font-bold tracking-tight bg-gradient-to-r from-primary via-yellow-400 to-primary bg-clip-text text-transparent drop-shadow-lg whitespace-nowrap">SAXOINVESTMENT</span>
+</div>
+<div class="flex items-center gap-2 sm:gap-3 shrink-0">
+    <!-- SMART BUTTON: Changes based on login state -->
+    <a id="dynamic-action-btn" href="#" class="px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold bg-primary text-background-dark rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/30 whitespace-nowrap flex items-center gap-1">
+        <span id="btn-icon" class="material-symbols-outlined text-sm md:text-base">login</span>
+        <span id="btn-text">Start Investing</span>
+    </a>
+</div>
+</div>
+</div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
+    <!-- Page header with live indicator -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-[slideUp_0.4s_ease-out]">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-black tracking-tight flex items-center gap-2 flex-wrap">📊 All Markets <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-primary"></span></span><span class="text-xs font-mono bg-primary/20 text-primary px-2 py-1 rounded-full">LIVE FEED</span></h1>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Real-time prices • Crypto • Stocks • Bonds/ETFs • Dynamic New Listings (names rotate every 5min)</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs bg-black/5 dark:bg-white/5 px-3 py-1.5 rounded-full">
+            <span class="material-symbols-outlined text-primary text-sm">schedule</span>
+            <span id="global-last-tick" class="font-mono">Streaming ticks...</span>
+        </div>
+    </div>
+
+    <!-- ================= CRYPTO MARKET SECTION ================= -->
+    <div class="mb-12">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <h2 class="section-title text-xl md:text-2xl font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">currency_bitcoin</span> Cryptocurrency</h2>
+            <div class="text-[10px] text-primary/70 flex items-center gap-1"><span class="material-symbols-outlined text-xs">bolt</span> High volatility • Real-time</div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div id="crypto-grid" class="contents"></div>
+        </div>
+    </div>
+
+    <!-- ================= STOCKS MARKET SECTION ================= -->
+    <div class="mb-12">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <h2 class="section-title text-xl md:text-2xl font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">show_chart</span> Stocks & Equities</h2>
+            <div class="text-[10px] text-primary/70">Major indices & blue chips</div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div id="stocks-grid" class="contents"></div>
+        </div>
+    </div>
+
+    <!-- ================= BONDS & ETFs SECTION ================= -->
+    <div class="mb-12">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <h2 class="section-title text-xl md:text-2xl font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">account_balance</span> Bonds & ETFs</h2>
+            <div class="text-[10px] text-primary/70">Fixed income • Diversified</div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div id="bonds-grid" class="contents"></div>
+        </div>
+    </div>
+
+    <!-- ================= NEW LISTINGS (DYNAMIC NAMES + REAL-TIME PRICE) ================= -->
+    <div class="mb-8 mt-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div class="flex items-center gap-3 flex-wrap">
+                <h2 class="section-title text-xl md:text-2xl font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">fiber_new</span> New Listings</h2>
+                <div class="bg-primary/20 rounded-full px-3 py-1 text-xs font-mono flex items-center gap-1"><span class="material-symbols-outlined text-primary text-sm">autorenew</span> <span id="countdown-timer" class="font-bold">04:59</span> until next name change</div>
+            </div>
+            <div class="text-xs text-slate-400 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">info</span> Coin names rotate every 5 min • Prices trade live</div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div id="newlistings-grid" class="contents"></div>
+        </div>
+    </div>
+
+    <div class="text-center text-[11px] text-slate-500 border-t border-primary/20 pt-6 mt-6">* Prices are simulated in real-time with market-like volatility. New listings category features rotating token names every 5 minutes while maintaining independent price dynamics.</div>
+</main>
+
+<!-- FOOTER -->
+<footer class="dark:border-primary/20 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-t-2 border-primary/30 pt-8 pb-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col items-center justify-center text-center space-y-3 mb-8">
+            <div class="flex flex-wrap items-center justify-center gap-1 md:gap-2 px-2">
+                <span class="footer-brand text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter bg-gradient-to-r from-primary via-yellow-400 to-primary bg-clip-text text-transparent drop-shadow-2xl break-words leading-tight flex flex-wrap justify-center">
+                    <span class="whitespace-nowrap sm:whitespace-normal">SAXO</span>
+                    <span class="whitespace-nowrap sm:whitespace-normal">INVESTMENT</span>
+                </span>
+            </div>
+            <div class="w-20 h-1 bg-primary/60 rounded-full"></div>
+            <p class="text-slate-400 max-w-xs sm:max-w-md text-xs sm:text-sm font-medium px-2">Your gateway to global markets — trusted by millions.</p>
+        </div>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-5 py-5 border-t border-white/10 border-b border-white/10 mb-5">
+            <div><h4 class="text-primary font-bold text-[11px] uppercase tracking-wider mb-2">Products</h4><ul class="space-y-1.5 text-[11px] text-slate-400"><li><a href="#" class="hover:text-primary transition">Stocks</a></li><li><a href="#" class="hover:text-primary transition">Options</a></li><li><a href="#" class="hover:text-primary transition">Crypto</a></li><li><a href="#" class="hover:text-primary transition">Margin</a></li></ul></div>
+            <div><h4 class="text-primary font-bold text-[11px] uppercase tracking-wider mb-2">Company</h4><ul class="space-y-1.5 text-[11px] text-slate-400"><li><a href="#" class="hover:text-primary transition">About</a></li><li><a href="#" class="hover:text-primary transition">Careers</a></li><li><a href="#" class="hover:text-primary transition">Press</a></li><li><a href="#" class="hover:text-primary transition">Blog</a></li></ul></div>
+            <div><h4 class="text-primary font-bold text-[11px] uppercase tracking-wider mb-2">Learn</h4><ul class="space-y-1.5 text-[11px] text-slate-400"><li><a href="#" class="hover:text-primary transition">Basics</a></li><li><a href="#" class="hover:text-primary transition">Market News</a></li><li><a href="#" class="hover:text-primary transition">Glossary</a></li><li><a href="#" class="hover:text-primary transition">Webinars</a></li></ul></div>
+            <div><h4 class="text-primary font-bold text-[11px] uppercase tracking-wider mb-2">Legal</h4><ul class="space-y-1.5 text-[11px] text-slate-400"><li><a href="#" class="hover:text-primary transition">Privacy</a></li><li><a href="#" class="hover:text-primary transition">Terms</a></li><li><a href="#" class="hover:text-primary transition">Disclosures</a></li><li><a href="#" class="hover:text-primary transition">Risk</a></li></ul></div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row justify-between items-center gap-3 text-[10px] text-slate-500 pt-2">
+            <p>© 2025 SAXOINVESTMENT. All rights reserved. Member FINRA/SIPC.</p>
+            <div class="flex gap-4"><a href="#" class="hover:text-primary transition"><span class="material-symbols-outlined text-sm">share</span></a><a href="#" class="hover:text-primary transition"><span class="material-symbols-outlined text-sm">language</span></a><a href="#" class="hover:text-primary transition"><span class="material-symbols-outlined text-sm">alternate_email</span></a></div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // --------------------------------------------------------------
+    // CORE MARKET DATA STRUCTURES (separate categories)
+    // --------------------------------------------------------------
+    let cryptoAssets = [
+        { id: "btc", name: "Bitcoin", symbol: "currency_bitcoin", price: 67500.00, change: 2.50, basePrice: 67500.00, type: "crypto" },
+        { id: "eth", name: "Ethereum", symbol: "currency_bitcoin", price: 3520.00, change: 1.20, basePrice: 3520.00, type: "crypto" },
+        { id: "sol", name: "Solana", symbol: "currency_bitcoin", price: 168.00, change: -0.50, basePrice: 168.00, type: "crypto" },
+        { id: "xrp", name: "XRP", symbol: "currency_bitcoin", price: 0.54, change: -1.10, basePrice: 0.54, type: "crypto" }
+    ];
+    let stockAssets = [
+        { id: "aapl", name: "Apple Inc.", symbol: "ios", price: 185.50, change: 0.45, basePrice: 185.50, type: "stock" },
+        { id: "nvda", name: "NVIDIA", symbol: "developer_board", price: 922.20, change: 2.80, basePrice: 922.20, type: "stock" },
+        { id: "tsla", name: "Tesla", symbol: "electric_car", price: 174.80, change: -1.25, basePrice: 174.80, type: "stock" },
+        { id: "amzn", name: "Amazon", symbol: "shopping_cart", price: 181.30, change: 0.90, basePrice: 181.30, type: "stock" }
+    ];
+    let bondEtfAssets = [
+        { id: "agg", name: "AGG (Bond ETF)", symbol: "savings", price: 97.42, change: 0.08, basePrice: 97.42, type: "bond" },
+        { id: "tlt", name: "20+ Yr Treasury", symbol: "featured_seasonal_and_gifts", price: 92.15, change: -0.22, basePrice: 92.15, type: "bond" },
+        { id: "bnd", name: "Vanguard Total Bond", symbol: "stacked_bar_chart", price: 73.88, change: 0.11, basePrice: 73.88, type: "bond" },
+        { id: "spy", name: "SPDR S&P 500 ETF", symbol: "show_chart", price: 512.30, change: 0.54, basePrice: 512.30, type: "bond" }
+    ];
+
+    // NEW LISTINGS: dynamic rotating names.
+    const namePool = ["Aetherion", "NexaChain", "Vortex Token", "Stellaris", "QuantumX", "Pulse AI", "Zenith Protocol", "EcoByte", "FusionFi", "Nebula Credit", "Solara", "Cypherium", "Mosaic DAO", "Helix Network", "VirtuSwap", "Orion Meta", "Apex Prime", "Clover Finance", "Radiant", "Zephyr"];
+    let newListingAssets = [
+        { id: "nl1", displayName: "Aetherion", symbol: "bolt", price: 1.245, change: 3.21, basePrice: 1.245, type: "newlist", volatility: 0.018, lastPrice: 1.245 },
+        { id: "nl2", displayName: "NexaChain", symbol: "link", price: 0.876, change: -1.44, basePrice: 0.876, type: "newlist", volatility: 0.022, lastPrice: 0.876 },
+        { id: "nl3", displayName: "Vortex Token", symbol: "cyclone", price: 3.452, change: 5.77, basePrice: 3.452, type: "newlist", volatility: 0.025, lastPrice: 3.452 },
+        { id: "nl4", displayName: "Stellaris", symbol: "star", price: 0.543, change: 0.92, basePrice: 0.543, type: "newlist", volatility: 0.015, lastPrice: 0.543 }
+    ];
+    
+    // Helper random walk
+    function getRandomWalkPrice(currentPrice, assetType) {
+        let volatility = 0.005;
+        if (assetType === 'crypto') volatility = 0.012;
+        else if (assetType === 'stock') volatility = 0.007;
+        else if (assetType === 'bond') volatility = 0.0025;
+        else if (assetType === 'newlist') volatility = 0.018;
+        let delta = (Math.random() - 0.5) * volatility * currentPrice;
+        let newPrice = currentPrice + delta;
+        if (assetType === 'newlist') return parseFloat(newPrice.toFixed(5));
+        if (assetType === 'crypto' && currentPrice < 1) return parseFloat(newPrice.toFixed(5));
+        if (assetType === 'crypto') return parseFloat(newPrice.toFixed(2));
+        if (assetType === 'stock') return parseFloat(newPrice.toFixed(2));
+        if (assetType === 'bond') return parseFloat(newPrice.toFixed(3));
+        return parseFloat(newPrice.toFixed(4));
+    }
+    function computeChangePercent(oldPrice, newPrice) { return parseFloat(((newPrice - oldPrice) / oldPrice * 100).toFixed(2)); }
+    
+    let prevPricesMap = new Map();
+    function updateCryptoPrices() { for (let a of cryptoAssets) { let old=a.price; let n=getRandomWalkPrice(old,'crypto'); a.price=n; a.change=computeChangePercent(old,n); } }
+    function updateStockPrices() { for (let a of stockAssets) { let old=a.price; let n=getRandomWalkPrice(old,'stock'); a.price=n; a.change=computeChangePercent(old,n); } }
+    function updateBondPrices() { for (let a of bondEtfAssets) { let old=a.price; let n=getRandomWalkPrice(old,'bond'); a.price=n; a.change=computeChangePercent(old,n); } }
+    function updateNewListingPrices() { for (let a of newListingAssets) { let old=a.price; let n=getRandomWalkPrice(old,'newlist'); a.price=n; a.change=computeChangePercent(old,n); } }
+    
+    async function fullMarketTick() {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const res = await fetch(`${window.location.origin}/api/watchlist`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const list = await res.json();
+                    cryptoAssets.forEach(c => {
+                        const dbAsset = list.find(x => x.symbol === c.id.toUpperCase());
+                        if (dbAsset) {
+                            c.price = dbAsset.price;
+                            c.change = dbAsset.changePercent;
+                        }
+                    });
+                    stockAssets.forEach(s => {
+                        const dbAsset = list.find(x => x.symbol === s.id.toUpperCase());
+                        if (dbAsset) {
+                            s.price = dbAsset.price;
+                            s.change = dbAsset.changePercent;
+                        }
+                    });
+                } else {
+                    updateCryptoPrices(); updateStockPrices();
+                }
+            } catch (err) {
+                console.warn('Failed to fetch live prices:', err);
+                updateCryptoPrices(); updateStockPrices();
+            }
+        } else {
+            updateCryptoPrices(); updateStockPrices();
+        }
+        updateBondPrices(); updateNewListingPrices();
+        renderAllTables();
+        const ts = document.getElementById('global-last-tick');
+        if(ts) ts.innerHTML = `Last tick: ${new Date().toLocaleTimeString()}.${String(new Date().getMilliseconds()).slice(0,2)}`;
+        scheduleNextTick();
+    }
+    function scheduleNextTick() { setTimeout(() => fullMarketTick(), Math.random() * 1800 + 800); }
+    
+    function renderAllTables() {
+        renderCategoryGrid('crypto-grid', cryptoAssets, 'crypto');
+        renderCategoryGrid('stocks-grid', stockAssets, 'stock');
+        renderCategoryGrid('bonds-grid', bondEtfAssets, 'bond');
+        renderCategoryGrid('newlistings-grid', newListingAssets, 'newlist');
+    }
+    
+    function renderCategoryGrid(containerId, assets, category) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
+        assets.forEach(asset => {
+            const displayName = asset.displayName || asset.name;
+            const changeClass = asset.change >= 0 ? 'price-up' : 'price-down';
+            const changeSign = asset.change >= 0 ? '+' : '';
+            let priceDisplay = `$${asset.price.toFixed(category === 'newlist' ? 5 : (category === 'bond' ? 3 : 2))}`;
+            if (category === 'crypto' && asset.price < 1) priceDisplay = `$${asset.price.toFixed(5)}`;
+            else if (category === 'crypto') priceDisplay = `$${asset.price.toFixed(2)}`;
+            const card = document.createElement('div');
+            card.className = 'market-card bg-white dark:bg-background-dark/60 rounded-xl border border-slate-200 dark:border-primary/20 p-4 transition-all duration-200 hover:border-primary/60';
+            card.innerHTML = `
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-xl">${asset.symbol || 'trending_up'}</span>
+                        <div><h3 class="font-bold text-sm md:text-base">${displayName}</h3><span class="text-[10px] text-slate-400 uppercase">${category === 'newlist' ? 'new listing' : category}</span></div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-mono font-bold price-value text-sm md:text-base">${priceDisplay}</div>
+                        <div class="text-xs font-bold ${changeClass}"><span>${changeSign}${asset.change}%</span></div>
+                    </div>
+                </div>
+                <button class="mt-3 w-full text-[11px] font-semibold bg-primary/10 hover:bg-primary/20 text-primary rounded-lg py-1.5 transition">Trade</button>
+            `;
+            const priceSpan = card.querySelector('.price-value');
+            const oldPrice = prevPricesMap.get(asset.id);
+            if (oldPrice !== undefined && Math.abs(oldPrice - asset.price) > 0.0001) {
+                priceSpan.classList.add(asset.change >= 0 ? 'flash-green' : 'flash-red');
+                setTimeout(() => priceSpan.classList.remove('flash-green', 'flash-red'), 300);
+            }
+            prevPricesMap.set(asset.id, asset.price);
+            container.appendChild(card);
+        });
+    }
+    
+    // New listings rotation (every 5 minutes)
+    let countdownSeconds = 300;
+    let countdownInterval = null;
+    function rotateNewListingsNames() {
+        let currentNames = newListingAssets.map(a => a.displayName);
+        let availableNames = namePool.filter(n => !currentNames.includes(n));
+        if (availableNames.length < newListingAssets.length) availableNames = [...namePool];
+        for (let i = 0; i < newListingAssets.length; i++) {
+            let newName;
+            do { newName = availableNames[Math.floor(Math.random() * availableNames.length)]; } 
+            while (currentNames.includes(newName) && availableNames.length > 1);
+            if (!newName) newName = namePool[i % namePool.length];
+            newListingAssets[i].displayName = newName;
+            const symbolsList = ["bolt", "link", "cyclone", "star", "rocket_launch", "currency_exchange", "auto_awesome", "token"];
+            newListingAssets[i].symbol = symbolsList[Math.floor(Math.random() * symbolsList.length)];
+            currentNames[i] = newName;
+        }
+        renderCategoryGrid('newlistings-grid', newListingAssets, 'newlist');
+        const gridDiv = document.getElementById('newlistings-grid');
+        if (gridDiv) {
+            gridDiv.querySelectorAll('.market-card').forEach(card => { card.classList.add('new-listing-item'); setTimeout(() => card.classList.remove('new-listing-item'), 800); });
+        }
+        countdownSeconds = 300;
+        updateCountdownDisplay();
+    }
+    function updateCountdownDisplay() {
+        const mins = Math.floor(countdownSeconds / 60);
+        const secs = countdownSeconds % 60;
+        const timerSpan = document.getElementById('countdown-timer');
+        if (timerSpan) timerSpan.innerText = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+    }
+    function startCountdown() {
+        if (countdownInterval) clearInterval(countdownInterval);
+        countdownInterval = setInterval(() => {
+            if (countdownSeconds <= 1) { rotateNewListingsNames(); countdownSeconds = 300; updateCountdownDisplay(); } 
+            else { countdownSeconds--; updateCountdownDisplay(); }
+        }, 1000);
+    }
+    
+    // Setup name getter for new listings
+    for (let nl of newListingAssets) { Object.defineProperty(nl, 'name', { get: function() { return this.displayName; }, enumerable: true }); }
+    
+    // Initialize all market data and start simulations
+    [...cryptoAssets, ...stockAssets, ...bondEtfAssets, ...newListingAssets].forEach(asset => { prevPricesMap.set(asset.id, asset.price); });
+    renderAllTables();
+    scheduleNextTick();
+    startCountdown();
+
+    // ======================= SMART BUTTON: Login State Detection =======================
+    // This function checks localStorage and updates the button accordingly
+    function updateButtonForLoginState() {
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const btn = document.getElementById('dynamic-action-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnIcon = document.getElementById('btn-icon');
+        
+        if (token && user && user.email) {
+            // User IS logged in → Show "Dashboard" button → redirect to investmentdashboard.html
+            btnText.innerText = 'Dashboard';
+            btnIcon.innerText = 'dashboard';
+            btn.href = 'investmentdashboard.html';
+        } else {
+            // User is NOT logged in → Show "Start Investing" button → redirect to join.html
+            btnText.innerText = 'Start Investing';
+            btnIcon.innerText = 'login';
+            btn.href = 'join.html';
+        }
+    }
+    
+    // Run on page load
+    updateButtonForLoginState();
+    
+    // Optional: Listen for storage changes (in case user logs in/out in another tab)
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'token' || e.key === 'user') {
+            updateButtonForLoginState();
+        }
+    });
+</script>
+</body>
+</html>
