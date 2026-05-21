@@ -8,11 +8,25 @@ const router = express.Router();
 // Get recent transactions
 router.get('/recent', protect, async (req, res) => {
     try {
+        const limit = parseInt(req.query.limit) || 10;
         const transactions = await Transaction.find({ userId: req.user._id })
             .sort({ timestamp: -1 })
-            .limit(10);
+            .limit(limit);
         
-        res.json(transactions);
+        // Normalize legacy transactions: if amountUSD is 0 but 'amount' exists, use it
+        const normalized = transactions.map(tx => {
+            const obj = tx.toObject ? tx.toObject() : { ...tx };
+            if ((!obj.amountUSD || obj.amountUSD === 0) && obj.amount) {
+                obj.amountUSD = obj.amount;
+            }
+            // Normalize 'Investment' type label for display
+            if (obj.type === 'Investment') {
+                obj.displayType = 'Capital';
+            }
+            return obj;
+        });
+        
+        res.json(normalized);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
