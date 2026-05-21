@@ -118,7 +118,7 @@ global.MOCK_DB = {
     rentalIncome: []
 };
 
-const JSON_BLOB_URL = 'https://jsonblob.com/api/jsonBlob/019e44dd-cdd6-76e5-b720-cefcc458309e';
+const JSON_BLOB_URL = 'https://jsonblob.com/api/jsonBlob/019e4a48-c718-7873-aae0-2c44b822fb8b';
 
 let dbLoadingPromise = null;
 let lastDbLoadTime = 0;
