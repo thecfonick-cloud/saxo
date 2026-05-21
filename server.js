@@ -139,28 +139,47 @@ const ensureDbLoaded = async () => {
     }
 
     dbLoadingPromise = (async () => {
-        const nocacheUrl = `${JSON_BLOB_URL}?nocache=${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const response = await globalThis.fetch(nocacheUrl);
-        if (!response.ok) {
-            throw new Error(`Failed to load database from JsonBlob: ${response.statusText} (${response.status})`);
+        let lastError = null;
+        const maxAttempts = 3;
+        
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                const nocacheUrl = `${JSON_BLOB_URL}?nocache=${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                const response = await globalThis.fetch(nocacheUrl);
+                if (!response.ok) {
+                    throw new Error(`Failed to load database from JsonBlob: ${response.statusText} (${response.status})`);
+                }
+                const savedDb = await response.json();
+                if (savedDb && Array.isArray(savedDb.users) && savedDb.users.length > 0) {
+                    global.MOCK_DB = {
+                        users: savedDb.users || [],
+                        holdings: savedDb.holdings || [],
+                        transactions: savedDb.transactions || [],
+                        watchlist: savedDb.watchlist || [],
+                        upgradeRequests: savedDb.upgradeRequests || [],
+                        depositProofs: savedDb.depositProofs || [],
+                        properties: savedDb.properties || [],
+                        rentalIncome: savedDb.rentalIncome || [],
+                        ...savedDb
+                    };
+                    lastDbLoadTime = Date.now();
+                    return; // Success!
+                } else {
+                    throw new Error('Database fetched from JsonBlob is invalid or empty');
+                }
+            } catch (err) {
+                lastError = err;
+                console.warn(`⚠️ [Attempt ${attempt}/${maxAttempts}] Database load failed: ${err.message}`);
+                if (attempt < maxAttempts) {
+                    // Wait 250ms before retrying
+                    await new Promise(resolve => setTimeout(resolve, 250));
+                }
+            }
         }
-        const savedDb = await response.json();
-        if (savedDb && Array.isArray(savedDb.users) && savedDb.users.length > 0) {
-            global.MOCK_DB = {
-                users: savedDb.users || [],
-                holdings: savedDb.holdings || [],
-                transactions: savedDb.transactions || [],
-                watchlist: savedDb.watchlist || [],
-                upgradeRequests: savedDb.upgradeRequests || [],
-                depositProofs: savedDb.depositProofs || [],
-                properties: savedDb.properties || [],
-                rentalIncome: savedDb.rentalIncome || [],
-                ...savedDb
-            };
-            lastDbLoadTime = Date.now();
-        } else {
-            throw new Error('Database fetched from JsonBlob is invalid or empty');
-        }
+        
+        // If we reach here, all attempts failed.
+        // Instead of throwing and returning a 503, we log a warning and fallback to current in-memory DB.
+        console.error('❌ Critical: Failed to load database from JsonBlob after all attempts. Falling back to current in-memory database state.', lastError);
     })().finally(() => {
         dbLoadingPromise = null;
     });
