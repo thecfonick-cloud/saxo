@@ -11,7 +11,13 @@ const UpgradeRequest = require('../models/UpgradeRequest');
 const router = express.Router();
 
 // Ensure upload directory exists (with writeable fallback for serverless read-only filesystems)
-let uploadDir = path.join(__dirname, '../uploads/proofs');
+const isServerless = process.env.VERCEL || process.env.NOW_REGION || process.env.LAMBDA_TASK_ROOT;
+let uploadDir;
+if (isServerless) {
+    uploadDir = '/tmp/uploads/proofs';
+} else {
+    uploadDir = path.join(__dirname, '../uploads/proofs');
+}
 try {
     if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
