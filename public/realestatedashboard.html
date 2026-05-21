@@ -372,8 +372,21 @@
         document.getElementById('purchase-token-yield').textContent = `${selectedMarketplaceProp.expectedYield}%`;
         document.getElementById('purchase-qty-limit').textContent = `Available: ${selectedMarketplaceProp.availableTokens} / ${selectedMarketplaceProp.totalTokens} Tokens`;
         
-        // Calculate user buying power
-        const buyingPowerVal = currentUser?.buyingPower || 50000;
+        // Fetch fresh buying power from backend (not stale localStorage)
+        const _bpToken = getAuthToken();
+        if (_bpToken) {
+            fetch(`${API_BASE}/user/profile`, { headers: { 'Authorization': `Bearer ${_bpToken}` } })
+                .then(r => r.ok ? r.json() : null)
+                .then(u => {
+                    if (u) {
+                        currentUser = u;
+                        localStorage.setItem('user', JSON.stringify(u));
+                        localStorage.setItem('user_data', JSON.stringify(u));
+                        document.getElementById('purchase-buying-power').textContent = `Buying Power: $${(u.buyingPower || 0).toLocaleString()}`;
+                    }
+                }).catch(() => {});
+        }
+        const buyingPowerVal = currentUser?.buyingPower || 0;
         document.getElementById('purchase-buying-power').textContent = `Buying Power: $${buyingPowerVal.toLocaleString()}`;
 
         const qtyInput = document.getElementById('purchase-qty');
@@ -405,14 +418,10 @@
             return;
         }
         
+        // Always fetch fresh user profile so buyingPower is accurate (don't rely on stale localStorage)
         const token = getAuthToken();
         const price = selectedMarketplaceProp.tokenPrice;
         const total = qty * price;
-
-        if (currentUser && total > currentUser.buyingPower) {
-            showToast('Insufficient buying power in trading ledger', true);
-            return;
-        }
 
         const submitBtn = document.getElementById('purchase-submit-btn');
         submitBtn.disabled = true;
@@ -470,22 +479,27 @@
         try {
             const headers = { 'Authorization': `Bearer ${token}` };
             
-            const [portfolioRes, propertiesRes, rentalsRes, transactionsRes] = await Promise.all([
+            // Always fetch fresh user profile first to get real buyingPower
+            const [userRes, portfolioRes, propertiesRes, rentalsRes, transactionsRes] = await Promise.all([
+                fetch(`${API_BASE}/user/profile`, { headers }),
                 fetch(`${API_BASE}/portfolio/summary`, { headers }),
                 fetch(`${API_BASE}/properties`, { headers }),
                 fetch(`${API_BASE}/rental/history`, { headers }),
                 fetch(`${API_BASE}/transactions/recent`, { headers })
             ]);
             
-            if (portfolioRes.status === 401 || propertiesRes.status === 401) {
+            if (userRes.status === 401 || portfolioRes.status === 401 || propertiesRes.status === 401) {
                 showToast('Session expired. Please login again.', true);
                 clearAuth();
                 window.location.href = 'join.html';
                 return;
             }
             
-            if (!portfolioRes.ok || !propertiesRes.ok) {
-                throw new Error('Failed to fetch real estate ledger data');
+            if (userRes.ok) {
+                currentUser = await userRes.json();
+                // Update cached user with fresh data (especially buyingPower)
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                localStorage.setItem('user_data', JSON.stringify(currentUser));
             }
             
             const portfolio = await portfolioRes.json();
