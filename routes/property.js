@@ -128,8 +128,10 @@ router.post('/invest', protect, async (req, res) => {
         await Transaction.create({
             userId: req.user._id,
             propertyId: property._id,
-            type: 'Investment',
-            amount: investmentAmount,
+            type: 'Buy',
+            symbol: 'REAL-ESTATE',
+            assetName: name,
+            amountUSD: investmentAmount,
             description: `Invested in ${name}`,
             status: 'Completed'
         });
