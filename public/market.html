@@ -209,10 +209,18 @@
     function updateNewListingPrices() { for (let a of newListingAssets) { let old=a.price; let n=getRandomWalkPrice(old,'newlist'); a.price=n; a.change=computeChangePercent(old,n); } }
     
     async function fullMarketTick() {
+        const API_BASE = (
+            window.location.origin.startsWith('file://') ||
+            window.location.hostname === '' ||
+            (window.location.hostname === 'localhost' && window.location.port !== '5000') ||
+            (window.location.hostname === '127.0.0.1' && window.location.port !== '5000')
+        ) 
+            ? 'https://saxo-tawny.vercel.app/api' 
+            : window.location.origin + '/api';
         const token = localStorage.getItem('token');
         if (token) {
             try {
-                const res = await fetch(`${window.location.origin}/api/watchlist`, {
+                const res = await fetch(`${API_BASE}/watchlist`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {

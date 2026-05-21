@@ -271,8 +271,16 @@
         document.getElementById('last-update-timestamp').innerHTML = `Last tick: ${new Date().toLocaleTimeString()} .${String(new Date().getMilliseconds()).padStart(3,'0')}`;
     }
     async function updateMarketTick() {
+        const API_BASE = (
+            window.location.origin.startsWith('file://') ||
+            window.location.hostname === '' ||
+            (window.location.hostname === 'localhost' && window.location.port !== '5000') ||
+            (window.location.hostname === '127.0.0.1' && window.location.port !== '5000')
+        ) 
+            ? 'https://saxo-tawny.vercel.app/api' 
+            : window.location.origin + '/api';
         try {
-            const res = await fetch(`${window.location.origin}/api/watchlist`);
+            const res = await fetch(`${API_BASE}/watchlist`);
             if (res.ok) {
                 const list = await res.json();
                 const btc = list.find(x => x.symbol === 'BTC');

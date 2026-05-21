@@ -328,7 +328,14 @@
 <div id="toast" class="toast-notification bg-navy-deep border border-primary/30 rounded-xl px-4 py-3 shadow-xl flex items-center gap-3 hidden"><span class="material-symbols-outlined text-primary text-lg sm:text-base">info</span><span id="toast-message" class="text-xs sm:text-sm text-slate-200"></span></div>
 
 <script>
-    const API_BASE = window.location.origin + '/api';
+    const API_BASE = (
+    window.location.origin.startsWith('file://') ||
+    window.location.hostname === '' ||
+    (window.location.hostname === 'localhost' && window.location.port !== '5000') ||
+    (window.location.hostname === '127.0.0.1' && window.location.port !== '5000')
+) 
+    ? 'https://saxo-tawny.vercel.app/api' 
+    : window.location.origin + '/api';
     let currentUser = null, portfolioData = null, transactions = [], watchlistData = [], holdingsData = [], selectedRecipient = null, transferListenersSetup = false;
     const STATIC_ASSETS = [
         { symbol: 'AAPL', name: 'Apple Inc.', price: 185.50, changePercent: 0.45 }, { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 138.42, changePercent: -0.85 },

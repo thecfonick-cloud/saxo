@@ -381,7 +381,14 @@
     </div>
     
     <script>
-        const API_BASE = window.location.origin + '/api';
+        const API_BASE = (
+    window.location.origin.startsWith('file://') ||
+    window.location.hostname === '' ||
+    (window.location.hostname === 'localhost' && window.location.port !== '5000') ||
+    (window.location.hostname === '127.0.0.1' && window.location.port !== '5000')
+) 
+    ? 'https://saxo-tawny.vercel.app/api' 
+    : window.location.origin + '/api';
 
         // â”€â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         function showToast(message, isError = false) {
