@@ -4,11 +4,15 @@ const JSON_BLOB_URL = 'https://jsonblob.com/api/jsonBlob/019e4a48-c718-7873-aae0
 const cleanDb = {
     users: [{
         _id: '507f1f0873e7900000000001',
-        fullName: 'VirexonLeaf Admin',
-        email: 'admin@virexonleaf.com',
+        fullName: 'VirexonCapital Admin',
+        email: 'admin@virexoncapital.com',
         password: 'hashed_password',
         buyingPower: 50000,
         totalPortfolioValue: 50000,
+        totalRealEstateValue: 0,
+        monthlyRentalIncome: 0,
+        totalAppreciation: 0,
+        propertyCount: 0,
         memberTier: 'Elite',
         isAdmin: true
     }],

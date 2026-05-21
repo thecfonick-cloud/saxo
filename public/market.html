@@ -48,7 +48,7 @@
 <div class="flex items-center justify-between h-16 gap-2">
 <div class="flex items-center gap-1 sm:gap-2 shrink-0">
 <span class="material-symbols-outlined tracking-tight text-slate-900 dark:text-slate-100 text-2xl sm:text-3xl">account_balance</span>
-<span class="text-sm sm:text-base md:text-xl font-bold tracking-tight bg-gradient-to-r from-primary via-yellow-400 to-primary bg-clip-text text-transparent drop-shadow-lg whitespace-nowrap">VIREXONINVESTMENT</span>
+<span class="text-sm sm:text-base md:text-xl font-bold tracking-tight bg-gradient-to-r from-primary via-yellow-400 to-primary bg-clip-text text-transparent drop-shadow-lg whitespace-nowrap">VIREXONCAPITAL</span>
 </div>
 <div class="flex items-center gap-2 sm:gap-3 shrink-0">
     <!-- SMART BUTTON: Changes based on login state -->
@@ -146,7 +146,7 @@
         </div>
         
         <div class="flex flex-col md:flex-row justify-between items-center gap-3 text-[10px] text-slate-500 pt-2">
-            <p>© 2025 VIREXONINVESTMENT. All rights reserved. Member FINRA/SIPC.</p>
+            <p>© 2025 VIREXONCAPITAL. All rights reserved. Member FINRA/SIPC.</p>
             <div class="flex gap-4"><a href="#" class="hover:text-primary transition"><span class="material-symbols-outlined text-sm">share</span></a><a href="#" class="hover:text-primary transition"><span class="material-symbols-outlined text-sm">language</span></a><a href="#" class="hover:text-primary transition"><span class="material-symbols-outlined text-sm">alternate_email</span></a></div>
         </div>
     </div>
@@ -210,13 +210,13 @@
     
     async function fullMarketTick() {
         const API_BASE = (
-            window.location.origin.startsWith('file://') ||
-            window.location.hostname === '' ||
-            (window.location.hostname === 'localhost' && window.location.port !== '5000') ||
-            (window.location.hostname === '127.0.0.1' && window.location.port !== '5000')
-        ) 
-            ? 'https://saxo-tawny.vercel.app/api' 
-            : window.location.origin + '/api';
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === '' ||
+    window.location.protocol === 'file:'
+)
+    ? 'http://localhost:5000/api'
+    : window.location.origin + '/api';
         const token = localStorage.getItem('token');
         if (token) {
             try {

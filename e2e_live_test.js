@@ -94,7 +94,7 @@ async function test() {
         const res = await fetch(`${BASE}/auth/admin/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: 'admin@virexonleaf.com', password: 'virexonleafinvestment' })
+            body: JSON.stringify({ email: 'admin@virexoncapital.com', password: 'virexoncapitalinvestment' })
         });
         const data = await res.json();
         if (res.ok && data.token) {

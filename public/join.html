@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>VIREXONINVESTMENT | Login & Register</title>
+<title>VIREXONCAPITAL | Login & Register</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet"/>
@@ -167,7 +167,7 @@
                             <span class="material-symbols-outlined text-navy-deep text-3xl">account_balance</span>
                         </div>
                         <div>
-                            <h1 class="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-yellow-400 to-primary bg-clip-text text-transparent drop-shadow-lg">VIREXONINVESTMENT</h1>
+                            <h1 class="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-yellow-400 to-primary bg-clip-text text-transparent drop-shadow-lg">VIREXONCAPITAL</h1>
                             <p class="text-primary/70 text-sm uppercase tracking-wider mt-1">Premium Investing Hub</p>
                         </div>
                     </a>
@@ -224,7 +224,7 @@
                                 &#9733;&#9733;&#9733;&#9733;&#9733;
                             </div>
                         </div>
-                        <p class="text-slate-400 text-sm italic">"VIREXONINVESTMENT transformed my investment strategy. The dashboard is intuitive and the returns have been exceptional."</p>
+                        <p class="text-slate-400 text-sm italic">"VIREXONCAPITAL transformed my investment strategy. The dashboard is intuitive and the returns have been exceptional."</p>
                         <p class="text-xs text-slate-500 mt-2">&mdash; Arthur Pendelton, Pro Member</p>
                     </div>
                 </div>
@@ -382,12 +382,12 @@
     
     <script>
         const API_BASE = (
-    window.location.origin.startsWith('file://') ||
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
     window.location.hostname === '' ||
-    (window.location.hostname === 'localhost' && window.location.port !== '5000') ||
-    (window.location.hostname === '127.0.0.1' && window.location.port !== '5000')
-) 
-    ? 'https://saxo-tawny.vercel.app/api' 
+    window.location.protocol === 'file:'
+)
+    ? 'http://localhost:5000/api'
     : window.location.origin + '/api';
 
         // â”€â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

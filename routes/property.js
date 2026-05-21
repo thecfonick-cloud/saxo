@@ -118,10 +118,10 @@ router.post('/invest', protect, async (req, res) => {
         
         // Update user's buying power and portfolio
         req.user.buyingPower -= investmentAmount;
-        req.user.totalRealEstateValue += currentValue;
-        req.user.totalPortfolioValue += (currentValue - investmentAmount);
-        req.user.propertyCount += 1;
-        req.user.monthlyRentalIncome += (monthlyRentalIncome || 0);
+        req.user.totalRealEstateValue = (req.user.totalRealEstateValue || 0) + currentValue;
+        req.user.totalPortfolioValue = (req.user.totalPortfolioValue || 0) + (currentValue - investmentAmount);
+        req.user.propertyCount = (req.user.propertyCount || 0) + 1;
+        req.user.monthlyRentalIncome = (req.user.monthlyRentalIncome || 0) + (monthlyRentalIncome || 0);
         await req.user.save();
         
         // Create transaction
@@ -163,9 +163,9 @@ router.put('/:id/update-value', protect, async (req, res) => {
         await property.save();
         
         // Update user's total real estate value
-        req.user.totalRealEstateValue += appreciation;
-        req.user.totalPortfolioValue += appreciation;
-        req.user.totalAppreciation += appreciation;
+        req.user.totalRealEstateValue = (req.user.totalRealEstateValue || 0) + appreciation;
+        req.user.totalPortfolioValue = (req.user.totalPortfolioValue || 0) + appreciation;
+        req.user.totalAppreciation = (req.user.totalAppreciation || 0) + appreciation;
         await req.user.save();
         
         res.json({

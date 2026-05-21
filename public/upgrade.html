@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>VIREXONINVESTMENT | Membership Pathways</title>
+<title>VIREXONCAPITAL | Membership Pathways</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet"/>
@@ -441,12 +441,12 @@
 
 <script>
     const API_BASE = (
-    window.location.origin.startsWith('file://') ||
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
     window.location.hostname === '' ||
-    (window.location.hostname === 'localhost' && window.location.port !== '5000') ||
-    (window.location.hostname === '127.0.0.1' && window.location.port !== '5000')
-) 
-    ? 'https://saxo-tawny.vercel.app/api' 
+    window.location.protocol === 'file:'
+)
+    ? 'http://localhost:5000/api'
     : window.location.origin + '/api';
     let currentUser = null;
     let requestedPlan = null;

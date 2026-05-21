@@ -107,8 +107,8 @@ let mockModeEnabled = true;
 global.MOCK_DB = {
     users: [{
         _id: '507f1f0873e7900000000001',
-        fullName: 'VirexonLeaf Admin',
-        email: 'admin@virexonleaf.com',
+        fullName: 'VirexonCapital Admin',
+        email: 'admin@virexoncapital.com',
         password: 'hashed_password',
         buyingPower: 50000,
         totalPortfolioValue: 50000,
@@ -261,7 +261,7 @@ app.get('/api/health', (req, res) => {
     }
     res.json({ 
         status: 'OK', 
-        message: 'VirexonInvestment API is running', 
+        message: 'VirexonCapital API is running', 
         timestamp: new Date(),
         blobsWorking,
         blobsError,
@@ -682,7 +682,11 @@ mongoose.connect(process.env.MONGODB_URI, {
     makeMockModel(require('./models/User'), 'users', {
         buyingPower: 0,
         totalPortfolioValue: 0,
-        memberTier: 'Standard'
+        memberTier: 'Standard',
+        totalRealEstateValue: 0,
+        monthlyRentalIncome: 0,
+        totalAppreciation: 0,
+        propertyCount: 0
     });
     makeMockModel(require('./models/Holding'), 'holdings');
     makeMockModel(require('./models/Transaction'), 'transactions');

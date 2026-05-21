@@ -73,7 +73,7 @@ async function test() {
     res = await fetch(`${BASE_URL}/auth/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'admin@virexonleaf.com', password: 'virexonleafinvestment' })
+        body: JSON.stringify({ email: 'admin@virexoncapital.com', password: 'virexoncapitalinvestment' })
     });
     data = await res.json();
     console.log('Admin login:', res.status, JSON.stringify(data, null, 2));

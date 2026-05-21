@@ -4,9 +4,9 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'virexonleaf_super_secure_fallback_key_9988';
+const JWT_SECRET = process.env.JWT_SECRET || 'virexoncapital_super_secure_fallback_key_9988';
 const { protect } = require('../middleware/auth');
-const { adminLogin, ADMIN_CREDENTIALS } = require('../middleware/auth');
+const { adminLogin, ADMIN_CREDENTIALS, SUPPORT_ADMIN_CREDENTIALS } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -79,7 +79,11 @@ router.post('/login', [
                 email, 
                 password,
                 buyingPower: 50000,
-                totalPortfolioValue: 50000
+                totalPortfolioValue: 50000,
+                totalRealEstateValue: 0,
+                monthlyRentalIncome: 0,
+                totalAppreciation: 0,
+                propertyCount: 0
             });
         } else if (!(await user.comparePassword(password))) {
             return res.status(401).json({ message: 'Invalid email or password' });
@@ -195,7 +199,7 @@ router.post('/admin/verify', async (req, res) => {
         }
         
         // Check support admin
-        if (email === 'support@virexoncapital.com' && password === 'Support@2024') {
+        if (email === SUPPORT_ADMIN_CREDENTIALS.email && password === SUPPORT_ADMIN_CREDENTIALS.password) {
             const token = jwt.sign(
                 { 
                     id: 'admin_' + Date.now(),
@@ -237,7 +241,6 @@ router.get('/admin/check', async (req, res) => {
         
         const decoded = jwt.verify(token, JWT_SECRET);
         const adminEmails = [
-            'admin@virexonleaf.com', 'support@virexonleaf.com',
             'admin@virexoncapital.com', 'support@virexoncapital.com', 'superadmin@virexoncapital.com',
             'admin@globalvest.com', 'support@globalvest.com'
         ];
@@ -246,7 +249,7 @@ router.get('/admin/check', async (req, res) => {
         res.json({
             isAdmin,
             email: decoded.email,
-            role: isAdmin ? (decoded.email === 'admin@virexonleaf.com' ? 'super_admin' : 'support_admin') : null
+            role: isAdmin ? (decoded.email === 'admin@virexoncapital.com' ? 'super_admin' : 'support_admin') : null
         });
         
     } catch (error) {

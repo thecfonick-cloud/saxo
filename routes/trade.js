@@ -274,7 +274,10 @@ router.post('/close', protect, async (req, res) => {
             metadata: { symbol: symbol.toUpperCase(), price: currentPrice, shares: holding.shares, isClose: true }
         });
         
-        res.json({ message: 'Position closed successfully' });
+        res.json({ 
+            message: 'Position closed successfully',
+            remainingBuyingPower: req.user.buyingPower
+        });
     } catch(err) {
         console.error('Close error:', err);
         res.status(500).json({ message: 'Server error' });

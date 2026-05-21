@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>VIREXONINVESTMENT | Premium Real Estate Hub</title>
+<title>VIREXONCAPITAL | Premium Real Estate Hub</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet"/>
@@ -140,7 +140,7 @@
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="flex items-center gap-2 text-slate-400">
                 <span class="material-symbols-outlined">account_balance</span>
-                <span class="text-xs font-semibold uppercase tracking-widest text-primary/70">VIREXONINVESTMENT Real Estate Hub</span>
+                <span class="text-xs font-semibold uppercase tracking-widest text-primary/70">VIREXONCAPITAL Real Estate Hub</span>
             </div>
             <div class="flex gap-8">
                 <a class="text-xs text-slate-500 hover:text-primary transition-colors" href="#">Privacy Policy</a>
@@ -274,12 +274,12 @@
 
 <script>
     const API_BASE = (
-    window.location.origin.startsWith('file://') ||
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
     window.location.hostname === '' ||
-    (window.location.hostname === 'localhost' && window.location.port !== '5000') ||
-    (window.location.hostname === '127.0.0.1' && window.location.port !== '5000')
-) 
-    ? 'https://saxo-tawny.vercel.app/api' 
+    window.location.protocol === 'file:'
+)
+    ? 'http://localhost:5000/api'
     : window.location.origin + '/api';
     let authToken = null;
     let currentUser = null;

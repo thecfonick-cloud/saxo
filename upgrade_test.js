@@ -10,7 +10,7 @@ const pass = 'Pass123!';
     const token = data.token;
     console.log('Register',res.status);
     // admin login
-    res = await fetch(`${BASE}/auth/admin/login`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'admin@virexonleaf.com',password:'virexonleafinvestment'})});
+    res = await fetch(`${BASE}/auth/admin/login`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'admin@virexoncapital.com',password:'virexoncapitalinvestment'})});
     const adminData = await res.json();
     const adminToken = adminData.token;
     // request upgrade from Standard to Pro (cost 49)

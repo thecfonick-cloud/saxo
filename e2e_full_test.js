@@ -164,7 +164,7 @@ async function test() {
 
     // 9. Search user (for transfer feature)
     try {
-        const res = await fetch(`${BASE}/user/search-user?email=admin@virexonleaf.com`, {
+        const res = await fetch(`${BASE}/user/search-user?email=admin@virexoncapital.com`, {
             headers: authHeaders
         });
         const data = await res.json();
@@ -182,7 +182,7 @@ async function test() {
         const res = await fetch(`${BASE}/auth/admin/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: 'admin@virexonleaf.com', password: 'virexonleafinvestment' })
+            body: JSON.stringify({ email: 'admin@virexoncapital.com', password: 'virexoncapitalinvestment' })
         });
         const data = await res.json();
         if (res.ok && data.token) {
@@ -401,7 +401,7 @@ async function test() {
             method: 'POST',
             headers: authHeaders,
             body: JSON.stringify({
-                recipientEmail: 'admin@virexonleaf.com',
+                recipientEmail: 'admin@virexoncapital.com',
                 amount: overAmount,
                 note: 'Should fail - insufficient funds'
             })

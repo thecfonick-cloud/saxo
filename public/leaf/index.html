@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/leaf/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>leaf</title>
-    <script type="module" crossorigin src="./assets/index-BAG3LiMw.js"></script>
+    <title>Virexon Capital Terminal</title>
+    <script type="module" crossorigin src="./assets/index-C_UoBc_a.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BWJ0FYl9.css">
   </head>
   <body>
@@ -27,7 +27,14 @@
               if (!token) return;
 
               try {
-                  const baseUrl = window.location.origin + '/api';
+                  const baseUrl = (
+                      window.location.hostname === 'localhost' ||
+                      window.location.hostname === '127.0.0.1' ||
+                      window.location.hostname === '' ||
+                      window.location.protocol === 'file:'
+                  )
+                      ? 'http://localhost:5000/api'
+                      : window.location.origin + '/api';
                   
                   // DETECT CLOSURES AND NEW TRADES
                   const state = window.__getStoreState();

@@ -2,7 +2,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'virexonleaf_super_secure_fallback_key_9988';
+const JWT_SECRET = process.env.JWT_SECRET || 'virexoncapital_super_secure_fallback_key_9988';
 
 const protect = async (req, res, next) => {
     let token;
@@ -43,7 +43,11 @@ const protect = async (req, res, next) => {
                 password: 'recreated_mock_password',
                 buyingPower: decoded.buyingPower || 0,
                 totalPortfolioValue: decoded.totalPortfolioValue || 0,
-                memberTier: 'Standard'
+                memberTier: 'Standard',
+                totalRealEstateValue: 0,
+                monthlyRentalIncome: 0,
+                totalAppreciation: 0,
+                propertyCount: 0
             });
         }
         
@@ -77,8 +81,6 @@ const adminOnly = async (req, res, next) => {
             'admin@virexoncapital.com',
             'support@virexoncapital.com',
             'superadmin@virexoncapital.com',
-            'admin@virexonleaf.com',
-            'support@virexonleaf.com',
             'admin@globalvest.com',
             'support@globalvest.com'
         ];
@@ -103,14 +105,14 @@ const adminOnly = async (req, res, next) => {
 
 // Hardcoded admin credentials
 const ADMIN_CREDENTIALS = {
-    email: 'admin@virexonleaf.com',
-    password: 'virexonleafinvestment',
+    email: 'admin@virexoncapital.com',
+    password: 'virexoncapitalinvestment',
     name: 'Super Admin'
 };
 
 const SUPPORT_ADMIN_CREDENTIALS = {
-    email: 'support@virexonleaf.com',
-    password: 'virexonleafinvestment',
+    email: 'support@virexoncapital.com',
+    password: 'virexoncapitalinvestment',
     name: 'Support Admin'
 };
 
@@ -141,4 +143,4 @@ const adminLogin = (email, password) => {
     return { success: false, error: 'Invalid admin credentials' };
 };
 
-module.exports = { protect, adminOnly, adminLogin, ADMIN_CREDENTIALS };
+module.exports = { protect, adminOnly, adminLogin, ADMIN_CREDENTIALS, SUPPORT_ADMIN_CREDENTIALS };
