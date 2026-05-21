@@ -1,5 +1,5 @@
 // Live verification test for LEAF balance sync
-const BASE = 'https://saxoinvestment-v2.netlify.app/api';
+const BASE = 'https://virexoncapital-v2.netlify.app/api';
 
 async function verify() {
     console.log('=== LEAF Balance Sync — Live Verification ===\n');
@@ -64,7 +64,7 @@ async function verify() {
 
     // Step 6: Verify leaf/index.html has the sync script injected
     console.log('\n6. GET /leaf/index.html (checking sync script injection)...');
-    res = await fetch('https://saxoinvestment-v2.netlify.app/leaf/index.html');
+    res = await fetch('https://virexoncapital-v2.netlify.app/leaf/index.html');
     const html = await res.text();
     const hasSyncScript = html.includes('window.__setBalance') && html.includes('window.__setPositions');
     const hasInterval = html.includes('SYNC_INTERVAL_MS');

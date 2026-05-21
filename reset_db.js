@@ -4,8 +4,8 @@ const JSON_BLOB_URL = 'https://jsonblob.com/api/jsonBlob/019e4a48-c718-7873-aae0
 const cleanDb = {
     users: [{
         _id: '507f1f0873e7900000000001',
-        fullName: 'SaxoLeaf Admin',
-        email: 'admin@saxoleaf.com',
+        fullName: 'VirexonLeaf Admin',
+        email: 'admin@virexonleaf.com',
         password: 'hashed_password',
         buyingPower: 50000,
         totalPortfolioValue: 50000,

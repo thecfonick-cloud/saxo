@@ -20,7 +20,7 @@ const pass = 'Pass123!';
     data = await res.json();
     console.log('Deposit request status', res.status);
     // Admin login
-    res = await fetch(`${BASE}/auth/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'admin@saxoleaf.com', password: 'saxoleafinvestment' }) });
+    res = await fetch(`${BASE}/auth/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'admin@virexonleaf.com', password: 'virexonleafinvestment' }) });
     const adminData = await res.json();
     const adminToken = adminData.token;
     // Admin verify deposit

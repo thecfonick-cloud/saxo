@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>SAXOINVESTMENT | Login & Register</title>
+<title>VIREXONINVESTMENT | Login & Register</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet"/>
@@ -167,7 +167,7 @@
                             <span class="material-symbols-outlined text-navy-deep text-3xl">account_balance</span>
                         </div>
                         <div>
-                            <h1 class="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-yellow-400 to-primary bg-clip-text text-transparent drop-shadow-lg">SAXOINVESTMENT</h1>
+                            <h1 class="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-yellow-400 to-primary bg-clip-text text-transparent drop-shadow-lg">VIREXONINVESTMENT</h1>
                             <p class="text-primary/70 text-sm uppercase tracking-wider mt-1">Premium Investing Hub</p>
                         </div>
                     </a>
@@ -224,7 +224,7 @@
                                 &#9733;&#9733;&#9733;&#9733;&#9733;
                             </div>
                         </div>
-                        <p class="text-slate-400 text-sm italic">"SAXOINVESTMENT transformed my investment strategy. The dashboard is intuitive and the returns have been exceptional."</p>
+                        <p class="text-slate-400 text-sm italic">"VIREXONINVESTMENT transformed my investment strategy. The dashboard is intuitive and the returns have been exceptional."</p>
                         <p class="text-xs text-slate-500 mt-2">&mdash; Arthur Pendelton, Pro Member</p>
                     </div>
                 </div>
@@ -387,7 +387,7 @@
     (window.location.hostname === 'localhost' && window.location.port !== '5000') ||
     (window.location.hostname === '127.0.0.1' && window.location.port !== '5000')
 ) 
-    ? 'https://saxo-tawny.vercel.app/api' 
+    ? 'https://virexon-tawny.vercel.app/api' 
     : window.location.origin + '/api';
 
         // â”€â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -448,7 +448,7 @@
 
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('auth_token', data.token);
-                localStorage.setItem('leaf_saxo_token', data.token);
+                localStorage.setItem('leaf_virexon_token', data.token);
                 if (data.user) {
                     localStorage.setItem('user', JSON.stringify(data.user));
                     localStorage.setItem('user_data', JSON.stringify(data.user));
@@ -492,7 +492,7 @@
 
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('auth_token', data.token);
-                localStorage.setItem('leaf_saxo_token', data.token);
+                localStorage.setItem('leaf_virexon_token', data.token);
                 if (data.user) {
                     localStorage.setItem('user', JSON.stringify(data.user));
                     localStorage.setItem('user_data', JSON.stringify(data.user));
@@ -537,7 +537,7 @@
 
         // â”€â”€â”€ Auto-login: redirect if already authenticated â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         (async () => {
-            const token = localStorage.getItem('token') || localStorage.getItem('auth_token') || localStorage.getItem('leaf_saxo_token');
+            const token = localStorage.getItem('token') || localStorage.getItem('auth_token') || localStorage.getItem('leaf_virexon_token');
             if (!token) return;
             try {
                 const res = await fetch(`${API_BASE}/auth/me`, {
@@ -548,7 +548,7 @@
                     // Sync all keys so every module works
                     localStorage.setItem('token', token);
                     localStorage.setItem('auth_token', token);
-                    localStorage.setItem('leaf_saxo_token', token);
+                    localStorage.setItem('leaf_virexon_token', token);
                     if (data.user || data) {
                         const u = data.user || data;
                         localStorage.setItem('user', JSON.stringify(u));
@@ -557,10 +557,10 @@
                     window.location.href = 'investmentdashboard.html';
                 } else {
                     // Clear stale tokens
-                    ['token','auth_token','leaf_saxo_token','user','user_data'].forEach(k => localStorage.removeItem(k));
+                    ['token','auth_token','leaf_virexon_token','user','user_data'].forEach(k => localStorage.removeItem(k));
                 }
             } catch (_) {
-                ['token','auth_token','leaf_saxo_token','user','user_data'].forEach(k => localStorage.removeItem(k));
+                ['token','auth_token','leaf_virexon_token','user','user_data'].forEach(k => localStorage.removeItem(k));
             }
         })();
 

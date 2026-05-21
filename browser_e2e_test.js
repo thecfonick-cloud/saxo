@@ -81,7 +81,7 @@ function assert(condition, msg) {
     res = await fetch(`${BASE}/auth/admin/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'admin@saxoleaf.com', password: 'saxoleafinvestment' })
+      body: JSON.stringify({ email: 'admin@virexonleaf.com', password: 'virexonleafinvestment' })
     });
     data = await res.json();
     assert(res.status === 200, `Admin login → Status ${res.status}`);

@@ -1,7 +1,7 @@
 {
-    "name": "backendsaxoinvestment",
+    "name": "backendvirexoncapital",
     "version": "1.0.0",
-    "description": "Saxo Premium Investor Dashboard Backend",
+    "description": "Virexon Premium Investor Dashboard Backend",
     "main": "server.js",
     "scripts": {
         "start": "node server.js",

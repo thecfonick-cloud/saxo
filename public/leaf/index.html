@@ -11,10 +11,10 @@
   <body>
     <div id="root"></div>
 
-    <!-- Live Sync between LEAF Terminal and Saxo Investment Dashboard -->
+    <!-- Live Sync between LEAF Terminal and Virexon Capital Dashboard -->
     <script>
       (function() {
-          console.log("LEAF-Saxo Real-Time Sync Active");
+          console.log("LEAF-Virexon Real-Time Sync Active");
           const SYNC_INTERVAL_MS = 2000; // sync every 2 seconds
           let lastKnownLeafPositionIds = null;
 
@@ -23,7 +23,7 @@
                   return;
               }
 
-              const token = localStorage.getItem('leaf_saxo_token') || localStorage.getItem('auth_token') || localStorage.getItem('token');
+              const token = localStorage.getItem('leaf_virexon_token') || localStorage.getItem('auth_token') || localStorage.getItem('token');
               if (!token) return;
 
               try {
@@ -33,7 +33,7 @@
     (window.location.hostname === 'localhost' && window.location.port !== '5000') ||
     (window.location.hostname === '127.0.0.1' && window.location.port !== '5000')
 ) 
-    ? 'https://saxo-tawny.vercel.app/api' 
+    ? 'https://virexon-tawny.vercel.app/api' 
     : window.location.origin + '/api';
                   
                   // DETECT CLOSURES AND NEW TRADES
@@ -43,10 +43,10 @@
                   
                   if (lastKnownLeafPositionIds !== null) {
                       // 1. Detect Closed Positions
-                      const closedIds = lastKnownLeafPositionIds.filter(id => !currentLeafPositionIds.includes(id) && id.startsWith('saxo_'));
+                      const closedIds = lastKnownLeafPositionIds.filter(id => !currentLeafPositionIds.includes(id) && id.startsWith('virexon_'));
                       for (const closedId of closedIds) {
                           console.log("LEAF closed position:", closedId);
-                          const symbol = closedId.replace('saxo_', '').toUpperCase();
+                          const symbol = closedId.replace('virexon_', '').toUpperCase();
                           try {
                               await fetch(`${baseUrl}/trade/close`, {
                                   method: 'POST',
@@ -57,7 +57,7 @@
                       }
                       
                       // 2. Detect New Positions
-                      const newPositions = currentLeafPositions.filter(p => !p.id.startsWith('saxo_') && !lastKnownLeafPositionIds.includes(p.id));
+                      const newPositions = currentLeafPositions.filter(p => !p.id.startsWith('virexon_') && !lastKnownLeafPositionIds.includes(p.id));
                       for (const pos of newPositions) {
                           console.log("LEAF opened position:", pos);
                           try {
@@ -104,7 +104,7 @@
                           const pnl = (currentPrice - holding.averagePrice) * holding.shares;
 
                           return {
-                              id: `saxo_${holding.symbol.toLowerCase()}`,
+                              id: `virexon_${holding.symbol.toLowerCase()}`,
                               symbol: leafSymbol,
                               type: 'BUY',
                               entryPrice: holding.averagePrice,

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>SAXOINVESTMENT | Deposit Funds</title>
+<title>VIREXONINVESTMENT | Deposit Funds</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet"/>
@@ -121,7 +121,7 @@
             <div class="size-9 bg-primary rounded flex items-center justify-center text-navy-deep font-extrabold shadow-lg shadow-primary/20">
                 <span class="material-symbols-outlined font-bold text-2xl">account_balance</span>
             </div>
-            <h2 class="text-xl font-extrabold tracking-tight text-white">SAXO<span class="text-primary font-light">INVESTMENT</span></h2>
+            <h2 class="text-xl font-extrabold tracking-tight text-white">VIREXON<span class="text-primary font-light">INVESTMENT</span></h2>
         </div>
         <div class="flex flex-wrap items-center gap-2 md:gap-3">
             <button id="withdraw-btn" class="flex items-center gap-1 md:gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-semibold text-xs md:text-sm transition-all border border-primary/20">
@@ -154,7 +154,7 @@
                 </button>
                 <h1 class="text-2xl md:text-3xl font-extrabold text-white">Deposit Liquidity</h1>
             </div>
-            <p class="text-primary/60 text-xs md:text-sm mt-1">Deploy capital securely to your premium SAXOINVESTMENT trading wallet.</p>
+            <p class="text-primary/60 text-xs md:text-sm mt-1">Deploy capital securely to your premium VIREXONINVESTMENT trading wallet.</p>
         </div>
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
@@ -247,7 +247,7 @@
     (window.location.hostname === 'localhost' && window.location.port !== '5000') ||
     (window.location.hostname === '127.0.0.1' && window.location.port !== '5000')
 ) 
-    ? 'https://saxo-tawny.vercel.app/api' 
+    ? 'https://virexon-tawny.vercel.app/api' 
     : window.location.origin + '/api';
     let selectedMethod = 'Crypto';
     let currentAmount = 5000;
@@ -321,7 +321,7 @@
                     instructions: 'Please transfer the exact amount to our premium settlement account. Use the reference ID for faster processing.',
                     details: [
                         { label: 'Bank Name', value: 'Global Trust Bank' },
-                        { label: 'Account Name', value: 'SAXOINVESTMENT Holdings Ltd' },
+                        { label: 'Account Name', value: 'VIREXONINVESTMENT Holdings Ltd' },
                         { label: 'Account Number', value: '4081 2209 6789 012' },
                         { label: 'Routing Number', value: '021000021' },
                         { label: 'Reference ID', value: refId },
@@ -334,7 +334,7 @@
                     title: 'Secure Card Payment',
                     instructions: 'Complete transfer via premium gateway or upload card statement screenshot with reference ID.',
                     details: [
-                        { label: 'Merchant', value: 'SAXOINVESTMENT Wallet Gateway' },
+                        { label: 'Merchant', value: 'VIREXONINVESTMENT Wallet Gateway' },
                         { label: 'Transaction Reference', value: refId },
                         { label: 'Amount Charged', value: `$${amount.toFixed(2)}` }
                     ],
@@ -345,8 +345,8 @@
                     title: 'International Wire Details',
                     instructions: 'Institutional settlement wire. Include your transaction reference ID in descriptions.',
                     details: [
-                        { label: 'Beneficiary Name', value: 'SAXOINVESTMENT Exchange Financial' },
-                        { label: 'SWIFT Code', value: 'SAXOGLVBUS33' },
+                        { label: 'Beneficiary Name', value: 'VIREXONINVESTMENT Exchange Financial' },
+                        { label: 'SWIFT Code', value: 'VIREXONGLVBUS33' },
                         { label: 'Account Number', value: '9876543210' },
                         { label: 'Reference ID', value: refId },
                         { label: 'Amount', value: `$${amount.toFixed(2)}` }

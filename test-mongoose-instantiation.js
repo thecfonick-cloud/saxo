@@ -10,8 +10,8 @@ const User = mongoose.model('TestUser', UserSchema);
 
 const obj = {
     _id: '507f1f0873e7900000000001',
-    fullName: 'SaxoInvestment Admin',
-    email: 'admin@saxoinvestment.com'
+    fullName: 'VirexonCapital Admin',
+    email: 'admin@virexoncapital.com'
 };
 
 const instance = new User(obj);

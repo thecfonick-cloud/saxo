@@ -25,7 +25,7 @@ async function test() {
     res = await fetch(`${BASE_URL}/auth/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'admin@saxoleaf.com', password: 'saxoleafinvestment' })
+        body: JSON.stringify({ email: 'admin@virexonleaf.com', password: 'virexonleafinvestment' })
     });
     data = await res.json();
     console.log(`Status: ${res.status}`);

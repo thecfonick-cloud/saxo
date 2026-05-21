@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'saxoleaf_super_secure_fallback_key_9988';
+const JWT_SECRET = process.env.JWT_SECRET || 'virexonleaf_super_secure_fallback_key_9988';
 const { protect } = require('../middleware/auth');
 const { adminLogin, ADMIN_CREDENTIALS } = require('../middleware/auth');
 
@@ -195,11 +195,11 @@ router.post('/admin/verify', async (req, res) => {
         }
         
         // Check support admin
-        if (email === 'support@saxoinvestment.com' && password === 'Support@2024') {
+        if (email === 'support@virexoncapital.com' && password === 'Support@2024') {
             const token = jwt.sign(
                 { 
                     id: 'admin_' + Date.now(),
-                    email: 'support@saxoinvestment.com',
+                    email: 'support@virexoncapital.com',
                     isAdmin: true,
                     adminRole: 'support_admin',
                     name: 'Support Admin'
@@ -212,7 +212,7 @@ router.post('/admin/verify', async (req, res) => {
                 success: true,
                 token,
                 admin: {
-                    email: 'support@saxoinvestment.com',
+                    email: 'support@virexoncapital.com',
                     name: 'Support Admin'
                 }
             });
@@ -237,8 +237,8 @@ router.get('/admin/check', async (req, res) => {
         
         const decoded = jwt.verify(token, JWT_SECRET);
         const adminEmails = [
-            'admin@saxoleaf.com', 'support@saxoleaf.com',
-            'admin@saxoinvestment.com', 'support@saxoinvestment.com', 'superadmin@saxoinvestment.com',
+            'admin@virexonleaf.com', 'support@virexonleaf.com',
+            'admin@virexoncapital.com', 'support@virexoncapital.com', 'superadmin@virexoncapital.com',
             'admin@globalvest.com', 'support@globalvest.com'
         ];
         const isAdmin = adminEmails.includes(decoded.email?.toLowerCase());
@@ -246,7 +246,7 @@ router.get('/admin/check', async (req, res) => {
         res.json({
             isAdmin,
             email: decoded.email,
-            role: isAdmin ? (decoded.email === 'admin@saxoleaf.com' ? 'super_admin' : 'support_admin') : null
+            role: isAdmin ? (decoded.email === 'admin@virexonleaf.com' ? 'super_admin' : 'support_admin') : null
         });
         
     } catch (error) {

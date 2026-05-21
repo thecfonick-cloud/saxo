@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>SAXOINVESTMENT | Premium Real Estate Hub</title>
+<title>VIREXONINVESTMENT | Premium Real Estate Hub</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet"/>
@@ -87,7 +87,7 @@
                 <div class="size-9 bg-primary rounded flex items-center justify-center text-navy-deep font-extrabold shadow-lg shadow-primary/20">
                     <span class="material-symbols-outlined font-bold text-2xl">account_balance</span>
                 </div>
-                <h2 class="text-xl font-extrabold tracking-tight text-white">SAXO<span class="text-primary font-light">INVESTMENT</span></h2>
+                <h2 class="text-xl font-extrabold tracking-tight text-white">VIREXON<span class="text-primary font-light">INVESTMENT</span></h2>
             </div>
             <nav class="hidden md:flex items-center gap-6 text-sm font-semibold">
                 <a class="text-slate-400 hover:text-primary transition-colors flex items-center gap-1.5" href="investmentdashboard.html">
@@ -140,7 +140,7 @@
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="flex items-center gap-2 text-slate-400">
                 <span class="material-symbols-outlined">account_balance</span>
-                <span class="text-xs font-semibold uppercase tracking-widest text-primary/70">SAXOINVESTMENT Real Estate Hub</span>
+                <span class="text-xs font-semibold uppercase tracking-widest text-primary/70">VIREXONINVESTMENT Real Estate Hub</span>
             </div>
             <div class="flex gap-8">
                 <a class="text-xs text-slate-500 hover:text-primary transition-colors" href="#">Privacy Policy</a>
@@ -279,7 +279,7 @@
     (window.location.hostname === 'localhost' && window.location.port !== '5000') ||
     (window.location.hostname === '127.0.0.1' && window.location.port !== '5000')
 ) 
-    ? 'https://saxo-tawny.vercel.app/api' 
+    ? 'https://virexon-tawny.vercel.app/api' 
     : window.location.origin + '/api';
     let authToken = null;
     let currentUser = null;
@@ -880,7 +880,7 @@
     // Initialize app
     async function init() {
         // Read token from any key login might have used
-        const token = localStorage.getItem('token') || localStorage.getItem('auth_token') || localStorage.getItem('leaf_saxo_token');
+        const token = localStorage.getItem('token') || localStorage.getItem('auth_token') || localStorage.getItem('leaf_virexon_token');
 
         if (!token) {
             window.location.href = 'join.html';
@@ -890,7 +890,7 @@
         // Sync all keys so every module is consistent
         localStorage.setItem('token', token);
         localStorage.setItem('auth_token', token);
-        localStorage.setItem('leaf_saxo_token', token);
+        localStorage.setItem('leaf_virexon_token', token);
 
         authToken = token;
 

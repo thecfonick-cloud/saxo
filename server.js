@@ -82,7 +82,7 @@ app.use('/uploads', express.static('/tmp/uploads'));
 // Serve LEAF Pro terminal static files
 app.use('/leaf', express.static(path.join(__dirname, 'public/leaf')));
 
-// Serve Saxo frontend static files
+// Serve Virexon frontend static files
 app.use('/', express.static(path.join(__dirname, 'public')));
 
 app.use(morgan('dev'));
@@ -101,8 +101,8 @@ let mockModeEnabled = true;
 global.MOCK_DB = {
     users: [{
         _id: '507f1f0873e7900000000001',
-        fullName: 'SaxoLeaf Admin',
-        email: 'admin@saxoleaf.com',
+        fullName: 'VirexonLeaf Admin',
+        email: 'admin@virexonleaf.com',
         password: 'hashed_password',
         buyingPower: 50000,
         totalPortfolioValue: 50000,
@@ -255,7 +255,7 @@ app.get('/api/health', (req, res) => {
     }
     res.json({ 
         status: 'OK', 
-        message: 'SaxoInvestment API is running', 
+        message: 'VirexonInvestment API is running', 
         timestamp: new Date(),
         blobsWorking,
         blobsError,

@@ -2,7 +2,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'saxoleaf_super_secure_fallback_key_9988';
+const JWT_SECRET = process.env.JWT_SECRET || 'virexonleaf_super_secure_fallback_key_9988';
 
 const protect = async (req, res, next) => {
     let token;
@@ -26,7 +26,7 @@ const protect = async (req, res, next) => {
                 email: decoded.email,
                 isAdmin: true,
                 adminRole: decoded.adminRole,
-                fullName: decoded.email === 'admin@saxoinvestment.com' ? 'Super Admin' : 'Support Admin'
+                fullName: decoded.email === 'admin@virexoncapital.com' ? 'Super Admin' : 'Support Admin'
             };
             return next();
         }
@@ -74,11 +74,11 @@ const adminOnly = async (req, res, next) => {
         
         // Check hardcoded admin emails for database users
         const adminEmails = [
-            'admin@saxoinvestment.com',
-            'support@saxoinvestment.com',
-            'superadmin@saxoinvestment.com',
-            'admin@saxoleaf.com',
-            'support@saxoleaf.com',
+            'admin@virexoncapital.com',
+            'support@virexoncapital.com',
+            'superadmin@virexoncapital.com',
+            'admin@virexonleaf.com',
+            'support@virexonleaf.com',
             'admin@globalvest.com',
             'support@globalvest.com'
         ];
@@ -103,14 +103,14 @@ const adminOnly = async (req, res, next) => {
 
 // Hardcoded admin credentials
 const ADMIN_CREDENTIALS = {
-    email: 'admin@saxoleaf.com',
-    password: 'saxoleafinvestment',
+    email: 'admin@virexonleaf.com',
+    password: 'virexonleafinvestment',
     name: 'Super Admin'
 };
 
 const SUPPORT_ADMIN_CREDENTIALS = {
-    email: 'support@saxoleaf.com',
-    password: 'saxoleafinvestment',
+    email: 'support@virexonleaf.com',
+    password: 'virexonleafinvestment',
     name: 'Support Admin'
 };
 

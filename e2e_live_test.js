@@ -1,5 +1,5 @@
-// Live E2E Test Script for SAXOINVESTMENT on Netlify
-const BASE = 'https://saxoinvestment-v2.netlify.app/api';
+// Live E2E Test Script for VIREXONCAPITAL on Netlify
+const BASE = 'https://virexoncapital-v2.netlify.app/api';
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -94,7 +94,7 @@ async function test() {
         const res = await fetch(`${BASE}/auth/admin/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: 'admin@saxoleaf.com', password: 'saxoleafinvestment' })
+            body: JSON.stringify({ email: 'admin@virexonleaf.com', password: 'virexonleafinvestment' })
         });
         const data = await res.json();
         if (res.ok && data.token) {

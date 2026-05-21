@@ -1,4 +1,4 @@
-// Full E2E Test Script for SAXOINVESTMENT
+// Full E2E Test Script for VIREXONCAPITAL
 const BASE = 'http://localhost:5000/api';
 
 async function test() {
@@ -164,7 +164,7 @@ async function test() {
 
     // 9. Search user (for transfer feature)
     try {
-        const res = await fetch(`${BASE}/user/search-user?email=admin@saxoleaf.com`, {
+        const res = await fetch(`${BASE}/user/search-user?email=admin@virexonleaf.com`, {
             headers: authHeaders
         });
         const data = await res.json();
@@ -182,7 +182,7 @@ async function test() {
         const res = await fetch(`${BASE}/auth/admin/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: 'admin@saxoleaf.com', password: 'saxoleafinvestment' })
+            body: JSON.stringify({ email: 'admin@virexonleaf.com', password: 'virexonleafinvestment' })
         });
         const data = await res.json();
         if (res.ok && data.token) {
@@ -401,7 +401,7 @@ async function test() {
             method: 'POST',
             headers: authHeaders,
             body: JSON.stringify({
-                recipientEmail: 'admin@saxoleaf.com',
+                recipientEmail: 'admin@virexonleaf.com',
                 amount: overAmount,
                 note: 'Should fail - insufficient funds'
             })
