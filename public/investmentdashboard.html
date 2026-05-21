@@ -336,7 +336,7 @@
 )
     ? 'http://localhost:5000/api'
     : window.location.origin + '/api';
-    let currentUser = null, portfolioData = null, transactions = [], watchlistData = [], holdingsData = [], selectedRecipient = null, transferListenersSetup = false;
+    let currentUser = null, portfolioData = null, transactions = [], watchlistData = [], holdingsData = [], selectedRecipient = null, transferListenersSetup = false, _refreshInterval = null;
     const STATIC_ASSETS = [
         { symbol: 'AAPL', name: 'Apple Inc.', price: 185.50, changePercent: 0.45 }, { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 138.42, changePercent: -0.85 },
         { symbol: 'NVDA', name: 'NVIDIA Corporation', price: 922.20, changePercent: 2.80 }, { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 181.30, changePercent: 0.90 },
@@ -352,7 +352,7 @@
     function setUserData(user) { if (user) { localStorage.setItem('user_data', JSON.stringify(user)); localStorage.setItem('user', JSON.stringify(user)); } else { localStorage.removeItem('user_data'); localStorage.removeItem('user'); } }
     function getUserData() { const userStr = localStorage.getItem('user_data') || localStorage.getItem('user'); return userStr ? JSON.parse(userStr) : null; }
     function clearAuth() { localStorage.removeItem('auth_token'); localStorage.removeItem('token'); localStorage.removeItem('user_data'); localStorage.removeItem('user'); currentUser = null; portfolioData = null; transactions = []; watchlistData = []; holdingsData = []; }
-    function logout() { clearAuth(); window.location.href = 'join.html'; }
+    function logout() { if (_refreshInterval) { clearInterval(_refreshInterval); _refreshInterval = null; } clearAuth(); window.location.replace('join.html'); }
 
     async function fetchDashboardData() { const token = getAuthToken(); if (!token) { window.location.href = 'join.html'; return; } try { const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }; const [userRes, portfolioRes, transactionsRes, watchlistRes, holdingsRes] = await Promise.all([ fetch(`${API_BASE}/user/profile`, { headers }), fetch(`${API_BASE}/portfolio/summary`, { headers }), fetch(`${API_BASE}/transactions/recent`, { headers }), fetch(`${API_BASE}/watchlist`, { headers }), fetch(`${API_BASE}/portfolio/holdings`, { headers }) ]); if (userRes.status === 401 || portfolioRes.status === 401) { showToast('Session expired. Please login again.', true); clearAuth(); window.location.href = 'join.html'; return; } currentUser = await userRes.json(); portfolioData = await portfolioRes.json(); transactions = await transactionsRes.json(); watchlistData = await watchlistRes.json(); holdingsData = await holdingsRes.json(); document.getElementById('user-name-display').innerText = currentUser?.fullName || 'User'; document.getElementById('user-tier-display').innerText = currentUser?.memberTier || 'Member'; document.getElementById('mobile-user-name').innerText = currentUser?.fullName?.split(' ')[0] || 'User'; document.getElementById('mobile-user-tier').innerText = currentUser?.memberTier || 'Member'; renderDashboard(); } catch (err) { console.error(err); showErrorState(err.message); } }
 
@@ -434,7 +434,7 @@
     if (mobileTransferBtn) mobileTransferBtn.addEventListener('click', () => { openTransferModal(); closeMenuFunc(); });
     if (mobileDepositBtn) mobileDepositBtn.addEventListener('click', () => { openDepositModal(); closeMenuFunc(); });
     if (mobileWithdrawBtn) mobileWithdrawBtn.addEventListener('click', () => { openWithdrawModal(); closeMenuFunc(); });
-    if (mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', () => { clearAuth(); window.location.href = 'join.html'; });
+    if (mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', () => { logout(); closeMenuFunc(); });
     
     async function init() { 
         const token = localStorage.getItem('token') || localStorage.getItem('auth_token') || localStorage.getItem('leaf_virexon_token');
@@ -473,7 +473,7 @@
 
         await fetchDashboardData(); 
     }
-    document.getElementById('logout-btn')?.addEventListener('click', () => { clearAuth(); window.location.href = 'join.html'; });
+    document.getElementById('logout-btn')?.addEventListener('click', logout);
     document.getElementById('transfer-btn')?.addEventListener('click', () => openTransferModal());
     document.getElementById('deposit-submit-btn')?.addEventListener('click', () => { const amount = parseFloat(document.getElementById('deposit-amount').value); const method = document.getElementById('deposit-method').value; if (!isNaN(amount) && amount >= 10) { depositFunds(amount, method); } else { showToast('Minimum deposit is $10', true); } });
     document.getElementById('withdraw-submit-btn')?.addEventListener('click', () => { const amount = parseFloat(document.getElementById('withdraw-amount').value); const method = document.getElementById('withdraw-method').value; if (!isNaN(amount) && amount >= 10 && amount <= currentUser?.buyingPower) { withdrawFunds(amount, method); } else { showToast(amount > currentUser?.buyingPower ? 'Insufficient funds' : 'Minimum withdrawal is $10', true); } });
@@ -481,7 +481,7 @@
     init();
 
     // ── Auto-refresh: poll dashboard data every 15 seconds ──
-    setInterval(async () => {
+    _refreshInterval = setInterval(async () => {
         const token = getAuthToken();
         if (token && currentUser) {
             try {
