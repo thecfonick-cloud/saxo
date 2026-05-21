@@ -13,7 +13,7 @@ router.get('/summary', protect, async (req, res) => {
         
         // Dynamically compute absolute portfolio valuation: cash + active holdings
         const totalHoldingsValue = holdings.reduce((sum, h) => sum + (h.shares * h.currentPrice), 0);
-        const computedTotalValue = req.user.buyingPower + totalHoldingsValue;
+        const computedTotalValue = req.user.buyingPower + totalHoldingsValue + (req.user.totalRealEstateValue || 0);
         
         // Persist computed value to prevent db drift
         await User.findByIdAndUpdate(req.user._id, { totalPortfolioValue: computedTotalValue });

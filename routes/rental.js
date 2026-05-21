@@ -43,10 +43,12 @@ router.post('/record', protect, async (req, res) => {
             transactionId: `RENT-${Date.now()}`
         });
         
-        // Update user's monthly rental income (average)
+        // Update user's monthly rental income (average), buying power, and portfolio value
         const allRentals = await RentalIncome.find({ userId: req.user._id });
         const avgMonthly = allRentals.reduce((sum, r) => sum + r.amount, 0) / Math.min(3, allRentals.length);
         req.user.monthlyRentalIncome = avgMonthly;
+        req.user.buyingPower += amount;
+        req.user.totalPortfolioValue += amount;
         await req.user.save();
         
         // Create transaction record

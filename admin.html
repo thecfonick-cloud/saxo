@@ -137,13 +137,13 @@
                     <label class="block text-xs font-bold text-slate-300 mb-2 uppercase">Core Operator Email</label>
                     <input type="email" id="adminEmail" required
                         class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white"
-                        placeholder="operator@saxoinvestment.com" value="admin@globalvest.com">
+                        placeholder="operator@saxoinvestment.com" value="admin@saxoleaf.com">
                 </div>
                 <div class="mb-6">
                     <label class="block text-xs font-bold text-slate-300 mb-2 uppercase">Verification Password</label>
                     <input type="password" id="adminPassword" required
                         class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary text-white"
-                        placeholder="••••••••" value="admin123">
+                        placeholder="••••••••" value="saxoleafinvestment">
                 </div>
                 <button type="submit"
                     class="w-full btn-primary text-navy-deep font-extrabold py-3.5 rounded-xl shadow-lg shadow-primary/20 transition-all uppercase tracking-wider text-sm flex items-center justify-center gap-2">
@@ -151,7 +151,7 @@
                     Authenticate Console
                 </button>
             </form>
-            <p class="text-xs text-center text-slate-500 mt-4">Demo credentials: admin@globalvest.com / admin123</p>
+            <p class="text-xs text-center text-slate-500 mt-4">Demo credentials: admin@saxoleaf.com / saxoleafinvestment</p>
         </div>
     </div>
 
@@ -489,7 +489,7 @@
 
         function getImageUrl(proofImageUrl) {
             if (!proofImageUrl) return null;
-            if (proofImageUrl.startsWith('http')) return proofImageUrl;
+            if (proofImageUrl.startsWith('http') || proofImageUrl.startsWith('data:')) return proofImageUrl;
             let cleanPath = proofImageUrl;
             if (cleanPath.startsWith('/api')) cleanPath = cleanPath.substring(4);
             if (!cleanPath.startsWith('/uploads')) cleanPath = `/uploads/proofs/${cleanPath.replace(/^\/+/, '')}`;

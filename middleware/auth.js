@@ -2,6 +2,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'saxoleaf_super_secure_fallback_key_9988';
+
 const protect = async (req, res, next) => {
     let token;
     
@@ -14,7 +16,7 @@ const protect = async (req, res, next) => {
     }
     
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, JWT_SECRET);
         
         // Check if this is an admin token (has isAdmin flag and no valid MongoDB ID)
         if (decoded.isAdmin === true) {
@@ -30,7 +32,21 @@ const protect = async (req, res, next) => {
         }
         
         // Regular user - find in database
-        const user = await User.findById(decoded.id).select('-password');
+        let user = await User.findById(decoded.id).select('-password');
+        
+        // AUTO-RECREATE USER ON MOCK SERVER RESTART (Stateless Resilience)
+        if (!user && decoded.email) {
+            user = await User.create({
+                _id: decoded.id,
+                email: decoded.email,
+                fullName: decoded.fullName || 'Re-synced User',
+                password: 'recreated_mock_password',
+                buyingPower: decoded.buyingPower || 0,
+                totalPortfolioValue: decoded.totalPortfolioValue || 0,
+                memberTier: 'Standard'
+            });
+        }
+        
         if (!user) {
             return res.status(401).json({ message: 'User not found' });
         }
@@ -60,7 +76,11 @@ const adminOnly = async (req, res, next) => {
         const adminEmails = [
             'admin@saxoinvestment.com',
             'support@saxoinvestment.com',
-            'superadmin@saxoinvestment.com'
+            'superadmin@saxoinvestment.com',
+            'admin@saxoleaf.com',
+            'support@saxoleaf.com',
+            'admin@globalvest.com',
+            'support@globalvest.com'
         ];
         
         // Check if user's email is in admin list

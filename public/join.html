@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>GlobalVest | Login & Register</title>
+<title>SAXOINVESTMENT | Login & Register</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet"/>
@@ -221,11 +221,11 @@
                                 <div class="w-8 h-8 rounded-full bg-emerald-500/30 flex items-center justify-center text-xs font-bold">MS</div>
                             </div>
                             <div class="flex text-primary text-sm font-bold tracking-widest">
-                                ★★★★★
+                                &#9733;&#9733;&#9733;&#9733;&#9733;
                             </div>
                         </div>
                         <p class="text-slate-400 text-sm italic">"SAXOINVESTMENT transformed my investment strategy. The dashboard is intuitive and the returns have been exceptional."</p>
-                        <p class="text-xs text-slate-500 mt-2">— Alexander Hunt, Pro Member</p>
+                        <p class="text-xs text-slate-500 mt-2">&mdash; Arthur Pendelton, Pro Member</p>
                     </div>
                 </div>
 
@@ -251,7 +251,7 @@
                                 <label class="block text-sm font-medium mb-2 text-slate-300">Password</label>
                                 <div class="relative">
                                     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-lg">lock</span>
-                                    <input type="password" id="login-password" class="w-full bg-navy-deep border border-border-dark rounded-xl pl-10 pr-12 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all text-slate-200" placeholder="••••••••" required />
+                                    <input type="password" id="login-password" class="w-full bg-navy-deep border border-border-dark rounded-xl pl-10 pr-12 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all text-slate-200" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required />
                                     <button type="button" class="toggle-password absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-primary transition-colors">
                                         <span class="material-symbols-outlined text-sm">visibility_off</span>
                                     </button>
@@ -266,7 +266,7 @@
                                     </div>
                                     <span class="text-sm text-slate-400">Remember me</span>
                                 </label>
-                                <a href="#" class="text-sm text-primary hover:underline">Forgot password?</a>
+                                <a href="#" id="forgot-password-link" class="text-sm text-primary hover:underline">Forgot password?</a>
                             </div>
                             
                             <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-navy-deep font-bold py-3 rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-primary/20">
@@ -280,8 +280,30 @@
                                 <button type="button" id="show-register" class="text-primary font-semibold hover:underline ml-1">Create account</button>
                             </p>
                         </div>
-                        
+                
+                    </div>
 
+                    <!-- Forgot Password Form (hidden by default) -->
+                    <div id="forgot-form-wrapper" class="glass-effect rounded-2xl p-8 shadow-2xl animate-slide-up hidden">
+                        <div class="text-center mb-8">
+                            <h3 class="text-2xl font-bold">Reset Password</h3>
+                            <p class="text-slate-400 text-sm mt-2">Enter your email and we'll send a reset link</p>
+                        </div>
+                        <form id="forgot-submit" class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-slate-300">Email Address</label>
+                                <div class="relative">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-lg">email</span>
+                                    <input type="email" id="forgot-email" class="w-full bg-navy-deep border border-border-dark rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all text-slate-200" placeholder="your@email.com" required />
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-navy-deep font-bold py-3 rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-primary/20">
+                                Send Reset Link
+                            </button>
+                        </form>
+                        <div class="mt-6 text-center">
+                            <button type="button" id="back-to-login" class="text-sm text-primary font-semibold hover:underline">&larr; Back to Sign In</button>
+                        </div>
                     </div>
                     
                     <!-- Register Form (Hidden Initially) -->
@@ -360,193 +382,185 @@
     
     <script>
         const API_BASE = window.location.origin + '/api';
-        
-        // Show toast notification
+
+        // â”€â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toast-message');
             toastMsg.innerText = message;
             toast.classList.remove('hidden');
-            if (isError) {
-                toast.style.borderColor = '#ef4444';
-                toast.querySelector('.material-symbols-outlined').style.color = '#ef4444';
-            } else {
-                toast.style.borderColor = '#d4af35';
-                toast.querySelector('.material-symbols-outlined').style.color = '#d4af35';
-            }
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 4000);
+            toast.style.borderColor = isError ? '#ef4444' : '#d4af35';
+            toast.querySelector('.material-symbols-outlined').style.color = isError ? '#ef4444' : '#d4af35';
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.add('hidden'), 4000);
         }
-        
-        // Toggle password visibility
+
+        // â”€â”€â”€ Toggle password visibility â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         document.querySelectorAll('.toggle-password').forEach(btn => {
             btn.addEventListener('click', function() {
                 const input = this.parentElement.querySelector('input');
                 const icon = this.querySelector('.material-symbols-outlined');
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.textContent = 'visibility';
-                } else {
-                    input.type = 'password';
-                    icon.textContent = 'visibility_off';
-                }
+                input.type = input.type === 'password' ? 'text' : 'password';
+                icon.textContent = input.type === 'password' ? 'visibility_off' : 'visibility';
             });
         });
-        
-        // Toggle between login and register forms
-        document.getElementById('show-register')?.addEventListener('click', () => {
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('register-form').classList.remove('hidden');
-        });
-        
-        document.getElementById('show-login')?.addEventListener('click', () => {
-            document.getElementById('register-form').classList.add('hidden');
-            document.getElementById('login-form').classList.remove('hidden');
-        });
-        
-        // Login handler - Redirect to investmentdashboard.html
+
+        // â”€â”€â”€ Show / hide form panels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        function showPanel(id) {
+            ['login-form', 'register-form', 'forgot-form-wrapper'].forEach(p => {
+                document.getElementById(p)?.classList.add('hidden');
+            });
+            document.getElementById(id)?.classList.remove('hidden');
+        }
+
+        document.getElementById('show-register')?.addEventListener('click', () => showPanel('register-form'));
+        document.getElementById('show-login')?.addEventListener('click', () => showPanel('login-form'));
+        document.getElementById('forgot-password-link')?.addEventListener('click', (e) => { e.preventDefault(); showPanel('forgot-form-wrapper'); });
+        document.getElementById('back-to-login')?.addEventListener('click', () => showPanel('login-form'));
+
+        // â”€â”€â”€ Login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         document.getElementById('login-submit')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('login-email').value;
+            const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
-            
-            if (!email || !password) {
-                showToast('Please fill in all fields', true);
-                return;
-            }
-            
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<div class="loading-spinner"></div> Signing in...';
-            submitBtn.disabled = true;
-            
+            if (!email || !password) { showToast('Please fill in all fields', true); return; }
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<div class="loading-spinner" style="display:inline-block;width:16px;height:16px;border:2px solid rgba(212,175,53,.3);border-top-color:#d4af35;border-radius:50%;animation:spin .6s linear infinite"></div> Signing in...';
+            btn.disabled = true;
+
             try {
-                const response = await fetch(`${API_BASE}/auth/login`, {
+                const res = await fetch(`${API_BASE}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.message || 'Login failed');
-                }
-                
-                // Store token and user data
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Login failed');
+
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                
-                showToast('Login successful! Redirecting to dashboard...');
-                
-                // Redirect to investmentdashboard.html
-                setTimeout(() => {
-                    window.location.href = 'investmentdashboard.html';
-                }, 1500);
-                
-            } catch (error) {
-                console.error('Login error:', error);
-                showToast(error.message || 'Login failed. Please check your credentials.', true);
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
+                localStorage.setItem('auth_token', data.token);
+                localStorage.setItem('leaf_saxo_token', data.token);
+                if (data.user) {
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('user_data', JSON.stringify(data.user));
+                }
+                showToast('Login successful! Redirecting...');
+                setTimeout(() => { window.location.href = 'investmentdashboard.html'; }, 1200);
+            } catch (err) {
+                showToast(err.message || 'Login failed. Check your credentials.', true);
+                btn.innerHTML = orig;
+                btn.disabled = false;
             }
         });
-        
-        // Register handler - Redirect to investmentdashboard.html
+
+        // â”€â”€â”€ Register â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         document.getElementById('register-submit')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
             const password = document.getElementById('reg-password').value;
             const confirmPassword = document.getElementById('reg-confirm-password').value;
             const termsAccepted = document.getElementById('terms-checkbox').checked;
-            
-            if (!name || !email || !password || !confirmPassword) {
-                showToast('Please fill in all fields', true);
-                return;
-            }
-            
-            if (password !== confirmPassword) {
-                showToast('Passwords do not match', true);
-                return;
-            }
-            
-            if (password.length < 6) {
-                showToast('Password must be at least 6 characters', true);
-                return;
-            }
-            
-            if (!termsAccepted) {
-                showToast('Please accept the Terms of Service', true);
-                return;
-            }
-            
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<div class="loading-spinner"></div> Creating account...';
-            submitBtn.disabled = true;
-            
+
+            if (!name || !email || !password || !confirmPassword) { showToast('Please fill in all fields', true); return; }
+            if (password !== confirmPassword) { showToast('Passwords do not match', true); return; }
+            if (password.length < 6) { showToast('Password must be at least 6 characters', true); return; }
+            if (!termsAccepted) { showToast('Please accept the Terms of Service', true); return; }
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<div class="loading-spinner" style="display:inline-block;width:16px;height:16px;border:2px solid rgba(212,175,53,.3);border-top-color:#d4af35;border-radius:50%;animation:spin .6s linear infinite"></div> Creating account...';
+            btn.disabled = true;
+
             try {
-                const response = await fetch(`${API_BASE}/auth/register`, {
+                const res = await fetch(`${API_BASE}/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ fullName: name, email, password })
                 });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.message || 'Registration failed');
-                }
-                
-                // Store token and user data
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Registration failed');
+
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                
-                showToast('Account created successfully! Redirecting to dashboard...');
-                
-                // Redirect to investmentdashboard.html
-                setTimeout(() => {
-                    window.location.href = 'investmentdashboard.html';
-                }, 1500);
-                
-            } catch (error) {
-                console.error('Registration error:', error);
-                showToast(error.message || 'Registration failed. Email might already exist.', true);
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
+                localStorage.setItem('auth_token', data.token);
+                localStorage.setItem('leaf_saxo_token', data.token);
+                if (data.user) {
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('user_data', JSON.stringify(data.user));
+                }
+                showToast('Account created! Redirecting to dashboard...');
+                setTimeout(() => { window.location.href = 'investmentdashboard.html'; }, 1200);
+            } catch (err) {
+                showToast(err.message || 'Registration failed. Email may already exist.', true);
+                btn.innerHTML = orig;
+                btn.disabled = false;
             }
         });
-        
-        // Check if already logged in and redirect to investmentdashboard.html
-        const token = localStorage.getItem('token');
-        if (token && window.location.pathname !== '/investmentdashboard.html' && !window.location.pathname.includes('investmentdashboard')) {
-            // Verify token with backend
-            fetch(`${API_BASE}/auth/me`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            }).then(res => {
-                if (res.ok) {
-                    window.location.href = 'investmentdashboard.html';
-                }
-            }).catch(() => {
-                // Token invalid, stay on login page
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-            });
-        }
-        
-        // Add floating animation to background elements
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes float {
-                0%, 100% { transform: translateY(0px); }
-                50% { transform: translateY(-10px); }
-            }
-        `;
-        document.head.appendChild(style);
-        
 
+        // â”€â”€â”€ Forgot Password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        document.getElementById('forgot-submit')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('forgot-email').value.trim();
+            if (!email) { showToast('Please enter your email', true); return; }
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<div class="loading-spinner" style="display:inline-block;width:16px;height:16px;border:2px solid rgba(212,175,53,.3);border-top-color:#d4af35;border-radius:50%;animation:spin .6s linear infinite"></div> Sending...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Request failed');
+                showToast(data.message || 'Password reset link sent to your email!');
+                showPanel('login-form');
+            } catch (err) {
+                showToast(err.message || 'Error sending reset link. Try again.', true);
+            } finally {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+            }
+        });
+
+        // â”€â”€â”€ Auto-login: redirect if already authenticated â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        (async () => {
+            const token = localStorage.getItem('token') || localStorage.getItem('auth_token') || localStorage.getItem('leaf_saxo_token');
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    // Sync all keys so every module works
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('auth_token', token);
+                    localStorage.setItem('leaf_saxo_token', token);
+                    if (data.user || data) {
+                        const u = data.user || data;
+                        localStorage.setItem('user', JSON.stringify(u));
+                        localStorage.setItem('user_data', JSON.stringify(u));
+                    }
+                    window.location.href = 'investmentdashboard.html';
+                } else {
+                    // Clear stale tokens
+                    ['token','auth_token','leaf_saxo_token','user','user_data'].forEach(k => localStorage.removeItem(k));
+                }
+            } catch (_) {
+                ['token','auth_token','leaf_saxo_token','user','user_data'].forEach(k => localStorage.removeItem(k));
+            }
+        })();
+
+        // spinner keyframe
+        const _s = document.createElement('style');
+        _s.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+        document.head.appendChild(_s);
     </script>
 </body>
 </html>

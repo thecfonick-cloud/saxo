@@ -36,13 +36,8 @@ async function seedDatabase() {
         await Holding.updateMany({ symbol: 'ETH' }, { currentPrice: 3520.00 });
         console.log('📈 Aligned existing user holdings prices with synchronized base values');
 
-        // Clean slate: Wipe all users, holdings, and transactions
-        await User.deleteMany({});
-        await Holding.deleteMany({});
-        await Transaction.deleteMany({});
-        console.log('🧹 Cleared all users, holdings, and transaction history');
-        
-        console.log('🌱 Database prepared as a fresh clean environment. No prefilled users exist!');
+        // Clean slate disabled to preserve local registered users and data
+        console.log('🌱 Database initialized successfully! Local data preserved.');
         
     } catch (error) {
         console.error('❌ Seeding error:', error);

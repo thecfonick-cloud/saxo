@@ -2,13 +2,132 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/leaf/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>leaf</title>
-    <script type="module" crossorigin src="./assets/index-DmI1vEHe.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-Ll9iCjHA.css">
+    <script type="module" crossorigin src="./assets/index-CcQdJ7zx.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-c1k_6Rpb.css">
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Live Sync between LEAF Terminal and Saxo Investment Dashboard -->
+    <script>
+      (function() {
+          console.log("LEAF-Saxo Real-Time Sync Active");
+          const SYNC_INTERVAL_MS = 2000; // sync every 2 seconds
+          let lastKnownLeafPositionIds = null;
+
+          async function doSync() {
+              if (!window.__setBalance || !window.__setPositions || !window.__getStoreState) {
+                  return;
+              }
+
+              const token = localStorage.getItem('leaf_saxo_token') || localStorage.getItem('auth_token') || localStorage.getItem('token');
+              if (!token) return;
+
+              try {
+                  const baseUrl = window.location.origin + '/api';
+                  
+                  // DETECT CLOSURES AND NEW TRADES
+                  const state = window.__getStoreState();
+                  const currentLeafPositions = state.positions || [];
+                  const currentLeafPositionIds = currentLeafPositions.map(p => p.id);
+                  
+                  if (lastKnownLeafPositionIds !== null) {
+                      // 1. Detect Closed Positions
+                      const closedIds = lastKnownLeafPositionIds.filter(id => !currentLeafPositionIds.includes(id) && id.startsWith('saxo_'));
+                      for (const closedId of closedIds) {
+                          console.log("LEAF closed position:", closedId);
+                          const symbol = closedId.replace('saxo_', '').toUpperCase();
+                          try {
+                              await fetch(`${baseUrl}/trade/close`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                  body: JSON.stringify({ symbol: symbol.replace('USDT', '') })
+                              });
+                          } catch (e) { console.error("Sync close error", e); }
+                      }
+                      
+                      // 2. Detect New Positions
+                      const newPositions = currentLeafPositions.filter(p => !p.id.startsWith('saxo_') && !lastKnownLeafPositionIds.includes(p.id));
+                      for (const pos of newPositions) {
+                          console.log("LEAF opened position:", pos);
+                          try {
+                              await fetch(`${baseUrl}/trade`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                  body: JSON.stringify({
+                                      symbol: pos.symbol.replace('USDT', ''),
+                                      amountUSD: pos.quantity * pos.entryPrice,
+                                      type: pos.type.toLowerCase() === 'sell' ? 'Sell' : 'Buy'
+                                  })
+                              });
+                          } catch (e) { console.error("Sync trade error", e); }
+                      }
+                  }
+
+                  const [profileRes, holdingsRes] = await Promise.all([
+                      fetch(`${baseUrl}/user/profile`, { headers: { Authorization: `Bearer ${token}` } }),
+                      fetch(`${baseUrl}/portfolio/holdings`, { headers: { Authorization: `Bearer ${token}` } })
+                  ]);
+
+                  if (!profileRes.ok || !holdingsRes.ok) return;
+
+                  const profile = await profileRes.json();
+                  const holdings = await holdingsRes.json();
+
+                  if (profile && typeof profile.buyingPower === 'number') {
+                      // Call setBalance with isSilent = true to prevent toast notifications during background updates
+                      window.__setBalance(profile.buyingPower, true);
+                  }
+
+                  if (Array.isArray(holdings)) {
+                      const marketAssets = [...(state.marketAssets || []), ...(state.customAssets || [])];
+
+                      const mappedPositions = holdings.map(holding => {
+                          let leafSymbol = holding.symbol.toUpperCase();
+                          if (leafSymbol !== 'EURUSD' && !leafSymbol.endsWith('USDT')) {
+                              leafSymbol += 'USDT';
+                          }
+
+                          // Calculate live profit/loss based on LEAF's current simulated ticker price
+                          const liveAsset = marketAssets.find(a => a.symbol === leafSymbol);
+                          const currentPrice = liveAsset ? liveAsset.price : holding.currentPrice;
+                          const pnl = (currentPrice - holding.averagePrice) * holding.shares;
+
+                          return {
+                              id: `saxo_${holding.symbol.toLowerCase()}`,
+                              symbol: leafSymbol,
+                              type: 'BUY',
+                              entryPrice: holding.averagePrice,
+                              quantity: holding.shares,
+                              pnl: pnl,
+                              takeProfit: 0,
+                              stopLoss: 0,
+                              openedAt: Date.now()
+                          };
+                      });
+
+                      window.__setPositions(mappedPositions);
+                      lastKnownLeafPositionIds = mappedPositions.map(p => p.id);
+                  }
+              } catch (err) {
+                  console.warn("Silent sync issue:", err);
+              }
+          }
+
+          function init() {
+              if (window.__setBalance && window.__setPositions) {
+                  doSync();
+                  setInterval(doSync, SYNC_INTERVAL_MS);
+              } else {
+                  setTimeout(init, 100);
+              }
+          }
+
+          init();
+      })();
+    </script>
   </body>
 </html>

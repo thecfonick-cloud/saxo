@@ -21,6 +21,37 @@ router.post('/', protect, async (req, res) => {
             return res.status(400).json({ message: 'Amount must be positive' });
         }
         
+        // --- LEAF MARGIN TRADES ---
+        if (req.body.isMarginTrade) {
+            if (type.toLowerCase() === 'buy') {
+                if (req.user.buyingPower < amountUSD) {
+                    return res.status(400).json({ message: 'Insufficient buying power' });
+                }
+                req.user.buyingPower -= amountUSD;
+            } else if (type.toLowerCase() === 'sell') {
+                req.user.buyingPower += amountUSD;
+            }
+            await req.user.save();
+            
+            await Transaction.create({
+                userId: req.user._id,
+                symbol: symbol.toUpperCase(),
+                assetName: symbol.toUpperCase(),
+                type: type.toLowerCase() === 'buy' ? 'Buy' : 'Sell',
+                quantity: 'N/A',
+                amountUSD: amountUSD,
+                pricePerUnit: 0,
+                status: 'Completed',
+                description: `LEAF Margin Trade - ${type.toLowerCase() === 'buy' ? 'Locked Margin' : 'Released Margin + PnL'} for ${symbol.toUpperCase()}`,
+                metadata: { symbol: symbol.toUpperCase(), isMarginTrade: true }
+            });
+            
+            return res.json({
+                message: 'Margin trade processed',
+                remainingBuyingPower: req.user.buyingPower
+            });
+        }
+        
         // Get current price from watchlist or create default
         let asset = await WatchlistItem.findOne({ symbol });
         
@@ -64,7 +95,6 @@ router.post('/', protect, async (req, res) => {
             
             // Update user's buying power
             req.user.buyingPower -= amountUSD;
-            req.user.totalPortfolioValue += amountUSD;
             await req.user.save();
             
             // Update or create holding
@@ -130,7 +160,6 @@ router.post('/', protect, async (req, res) => {
             
             // Update user's buying power and portfolio
             req.user.buyingPower += amountUSD;
-            req.user.totalPortfolioValue -= amountUSD;
             await req.user.save();
             
             // Create transaction
@@ -205,6 +234,49 @@ router.get('/performance', protect, async (req, res) => {
         });
     } catch (error) {
         console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Close entire holding
+router.post('/close', protect, async (req, res) => {
+    try {
+        const { symbol } = req.body;
+        if (!symbol) return res.status(400).json({ message: 'Missing symbol' });
+        
+        const holding = await Holding.findOne({ userId: req.user._id, symbol: symbol.toUpperCase() });
+        if (!holding) return res.status(400).json({ message: 'Holding not found' });
+        
+        const asset = await WatchlistItem.findOne({ symbol: symbol.toUpperCase() });
+        const currentPrice = asset ? asset.price : holding.currentPrice;
+        const amountUSD = holding.shares * currentPrice;
+        
+        // Update user's buying power
+        req.user.buyingPower += amountUSD;
+        await req.user.save();
+        
+        const quantityStr = holding.shares.toFixed(4);
+        
+        // Delete holding
+        await holding.deleteOne();
+        
+        // Create transaction
+        await Transaction.create({
+            userId: req.user._id,
+            symbol: symbol.toUpperCase(),
+            assetName: holding.assetName,
+            type: 'Sell',
+            quantity: quantityStr,
+            amountUSD: amountUSD,
+            pricePerUnit: currentPrice,
+            status: 'Completed',
+            description: `Sold all ${quantityStr} shares of ${symbol.toUpperCase()} at $${currentPrice.toFixed(2)}`,
+            metadata: { symbol: symbol.toUpperCase(), price: currentPrice, shares: holding.shares, isClose: true }
+        });
+        
+        res.json({ message: 'Position closed successfully' });
+    } catch(err) {
+        console.error('Close error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 });

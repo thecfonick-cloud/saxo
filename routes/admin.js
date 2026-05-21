@@ -125,15 +125,16 @@ router.post('/deposits/:id/verify', async (req, res) => {
         deposit.verifiedBy = req.user.email;
         await deposit.save();
         
-        // Credit the user's balance
-        const user = await User.findById(deposit.userId);
+        // Credit the user's balance atomically
+        const user = await User.findByIdAndUpdate(
+            deposit.userId,
+            { $inc: { buyingPower: deposit.amount, totalPortfolioValue: deposit.amount } },
+            { new: true }
+        );
+        
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        
-        user.buyingPower += deposit.amount;
-        user.totalPortfolioValue += deposit.amount;
-        await user.save();
         
         // Update or create transaction
         let transaction = await Transaction.findOne({ 
@@ -277,34 +278,41 @@ router.post('/upgrade-requests/:id/approve', async (req, res) => {
             return res.status(400).json({ message: 'Request already processed' });
         }
         
-        // Get the user
-        const user = await User.findById(request.userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        
-        const oldTier = user.memberTier;
         const upgradeCost = request.upgradeCost;
         const isDowngrade = request.isDowngrade;
+        const oldTier = request.currentTier; // Fetch from request directly since we didn't load user yet
         
+        let user;
         // Process payment only for upgrades (not downgrades)
         if (upgradeCost > 0) {
-            // Check if user still has sufficient funds (might have changed since request)
-            if (user.buyingPower < upgradeCost) {
+            // Deduct the upgrade cost atomically
+            user = await User.findOneAndUpdate(
+                { _id: request.userId, buyingPower: { $gte: upgradeCost } },
+                { 
+                    $inc: { buyingPower: -upgradeCost, totalPortfolioValue: -upgradeCost },
+                    $set: { memberTier: request.requestedTier }
+                },
+                { new: true }
+            );
+            
+            if (!user) {
                 return res.status(400).json({ 
-                    message: `User no longer has sufficient funds. Need $${upgradeCost}, available: $${user.buyingPower}`,
+                    message: `User no longer has sufficient funds or concurrent transaction processing. Need $${upgradeCost}`,
                     success: false
                 });
             }
+        } else {
+            // Update user's tier directly
+            user = await User.findByIdAndUpdate(
+                request.userId,
+                { $set: { memberTier: request.requestedTier } },
+                { new: true }
+            );
             
-            // Deduct the upgrade cost from user's buying power
-            user.buyingPower -= upgradeCost;
-            await user.save();
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
         }
-        
-        // Update user's tier
-        user.memberTier = request.requestedTier;
-        await user.save();
         
         // Update request status
         request.status = 'approved';

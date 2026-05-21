@@ -39,12 +39,12 @@ router.get('/all', protect, async (req, res) => {
         // Get summary statistics
         const deposits = await Transaction.aggregate([
             { $match: { userId: req.user._id, type: 'Deposit', status: 'Completed' } },
-            { $group: { _id: null, total: { $sum: '$amount' } } }
+            { $group: { _id: null, total: { $sum: '$amountUSD' } } }
         ]);
         
         const withdrawals = await Transaction.aggregate([
             { $match: { userId: req.user._id, type: 'Withdrawal', status: 'Completed' } },
-            { $group: { _id: null, total: { $sum: '$amount' } } }
+            { $group: { _id: null, total: { $sum: '$amountUSD' } } }
         ]);
         
         res.json({

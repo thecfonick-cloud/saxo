@@ -3,6 +3,8 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'saxoleaf_super_secure_fallback_key_9988';
 const { protect } = require('../middleware/auth');
 const { adminLogin, ADMIN_CREDENTIALS } = require('../middleware/auth');
 
@@ -29,7 +31,13 @@ router.post('/register', [
         
         const user = await User.create({ fullName, email, password });
         
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+        const token = jwt.sign({ 
+            id: user._id,
+            email: user.email,
+            fullName: user.fullName,
+            buyingPower: user.buyingPower,
+            totalPortfolioValue: user.totalPortfolioValue
+        }, JWT_SECRET, { expiresIn: '30d' });
         
         res.status(201).json({
             message: 'User created successfully',
@@ -61,12 +69,29 @@ router.post('/login', [
     try {
         const { email, password } = req.body;
         
-        const user = await User.findOne({ email });
-        if (!user || !(await user.comparePassword(password))) {
+        let user = await User.findOne({ email });
+        
+        // MOCK DB RESILIENCE: If user vanished due to server restart, auto-recreate them!
+        if (!user) {
+            console.log(`[Mock DB] User ${email} not found, auto-creating fresh account...`);
+            user = await User.create({ 
+                fullName: email.split('@')[0], 
+                email, 
+                password,
+                buyingPower: 50000,
+                totalPortfolioValue: 50000
+            });
+        } else if (!(await user.comparePassword(password))) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
         
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+        const token = jwt.sign({ 
+            id: user._id,
+            email: user.email,
+            fullName: user.fullName,
+            buyingPower: user.buyingPower,
+            totalPortfolioValue: user.totalPortfolioValue
+        }, JWT_SECRET, { expiresIn: '30d' });
         
         res.json({
             message: 'Login successful',
@@ -120,7 +145,7 @@ router.post('/admin/login', async (req, res) => {
                 adminRole: result.admin.role,
                 name: result.admin.name
             }, 
-            process.env.JWT_SECRET, 
+            JWT_SECRET, 
             { expiresIn: '24h' }
         );
         
@@ -148,8 +173,14 @@ router.post('/admin/verify', async (req, res) => {
         // Check if it's the hardcoded admin
         if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
             const token = jwt.sign(
-                { email: ADMIN_CREDENTIALS.email, role: 'admin' },
-                process.env.JWT_SECRET,
+                { 
+                    id: 'admin_' + Date.now(),
+                    email: ADMIN_CREDENTIALS.email,
+                    isAdmin: true,
+                    adminRole: 'super_admin',
+                    name: ADMIN_CREDENTIALS.name
+                },
+                JWT_SECRET,
                 { expiresIn: '1d' }
             );
             
@@ -166,8 +197,14 @@ router.post('/admin/verify', async (req, res) => {
         // Check support admin
         if (email === 'support@saxoinvestment.com' && password === 'Support@2024') {
             const token = jwt.sign(
-                { email: 'support@saxoinvestment.com', role: 'support' },
-                process.env.JWT_SECRET,
+                { 
+                    id: 'admin_' + Date.now(),
+                    email: 'support@saxoinvestment.com',
+                    isAdmin: true,
+                    adminRole: 'support_admin',
+                    name: 'Support Admin'
+                },
+                JWT_SECRET,
                 { expiresIn: '1d' }
             );
             
@@ -198,10 +235,13 @@ router.get('/admin/check', async (req, res) => {
             return res.status(401).json({ isAdmin: false });
         }
         
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const adminEmails = ['admin@saxoleaf.com', 'support@saxoleaf.com'];
-        
-        const isAdmin = adminEmails.includes(decoded.email);
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const adminEmails = [
+            'admin@saxoleaf.com', 'support@saxoleaf.com',
+            'admin@saxoinvestment.com', 'support@saxoinvestment.com', 'superadmin@saxoinvestment.com',
+            'admin@globalvest.com', 'support@globalvest.com'
+        ];
+        const isAdmin = adminEmails.includes(decoded.email?.toLowerCase());
         
         res.json({
             isAdmin,

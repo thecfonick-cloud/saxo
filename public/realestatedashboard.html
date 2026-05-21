@@ -124,41 +124,7 @@
             </a>
         </div>
 
-        <!-- Login Screen (hidden initially) -->
-        <div id="login-screen" style="display: none;">
-            <div class="flex items-center justify-center min-h-[65vh]">
-                <div class="glass-effect border border-primary/25 rounded-2xl p-8 max-w-md w-full shadow-2xl">
-                    <div class="text-center mb-8">
-                        <div class="bg-primary p-3.5 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/20">
-                            <span class="material-symbols-outlined text-navy-deep text-3xl font-bold">domain</span>
-                        </div>
-                        <h2 class="text-2xl font-bold text-white tracking-tight">Real Estate SSO Gateway</h2>
-                        <p class="text-slate-400 mt-2 text-sm">Synchronizing your SAXOINVESTMENT trading session...</p>
-                    </div>
-                    
-                    <form id="login-form" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
-                            <input type="email" id="login-email" 
-                                   class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-3 text-slate-200 focus:ring-primary focus:border-primary text-sm"
-                                   placeholder="admin@globalvest.com" required value="admin@globalvest.com">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-slate-300 mb-2">Password</label>
-                            <input type="password" id="login-password" 
-                                   class="w-full bg-navy-deep border border-border-dark rounded-xl px-4 py-3 text-slate-200 focus:ring-primary focus:border-primary text-sm"
-                                   placeholder="••••••••" required value="password123">
-                        </div>
-                        
-                        <button type="submit" 
-                                class="w-full bg-primary hover:bg-primary-dark text-navy-deep font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-primary/25">
-                            Authenticate Real Estate Node
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
+
         
         <!-- Loading State -->
         <div id="loading-state" class="flex justify-center items-center h-96">
@@ -374,68 +340,10 @@
         currentUser = null;
     }
 
-    // Login function
-    async function login(email, password) {
-        try {
-            const response = await fetch(`${API_BASE}/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.message || 'Login failed');
-            }
-            
-            setAuthToken(data.token);
-            setUserData(data.user);
-            
-            showToast('Welcome back, ' + data.user.fullName);
-            await loadDashboard();
-            return true;
-        } catch (error) {
-            console.error('Login error:', error);
-            showToast(error.message, true);
-            return false;
-        }
-    }
-
     // Logout function
     function logout() {
         clearAuth();
-        showLoginScreen();
-        showToast('Logged out successfully');
-    }
-
-    // Show login screen
-    function showLoginScreen() {
-        document.getElementById('login-screen').style.display = 'block';
-        document.getElementById('loading-state').style.display = 'none';
-        document.getElementById('dashboard-content').style.display = 'none';
-        
-        document.getElementById('dashboard-content').innerHTML = '';
-        
-        const loginForm = document.getElementById('login-form');
-        const newForm = loginForm.cloneNode(true);
-        loginForm.parentNode.replaceChild(newForm, loginForm);
-        
-        newForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            
-            const submitBtn = newForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Synchronizing...';
-            submitBtn.disabled = true;
-            
-            await login(email, password);
-            
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        });
+        window.location.href = 'join.html';
     }
 
     // Close Modals
@@ -529,7 +437,7 @@
             if (response.status === 401) {
                 showToast('Session expired.', true);
                 clearAuth();
-                showLoginScreen();
+                window.location.href = 'join.html';
                 return;
             }
 
@@ -551,7 +459,7 @@
         const token = getAuthToken();
         
         if (!token) {
-            showLoginScreen();
+            window.location.href = 'join.html';
             return;
         }
         
@@ -568,7 +476,7 @@
             if (portfolioRes.status === 401 || propertiesRes.status === 401) {
                 showToast('Session expired. Please login again.', true);
                 clearAuth();
-                showLoginScreen();
+                window.location.href = 'join.html';
                 return;
             }
             
@@ -648,7 +556,6 @@
 
     // Render dashboard with real data
     function renderDashboard(portfolio, properties, rentals, transactions) {
-        document.getElementById('login-screen').style.display = 'none';
         document.getElementById('loading-state').style.display = 'none';
         const container = document.getElementById('dashboard-content');
         container.style.display = 'block';
@@ -900,7 +807,7 @@
             
             if (!token) {
                 showToast('Please login first', true);
-                showLoginScreen();
+                window.location.href = 'join.html';
                 return;
             }
             
@@ -929,7 +836,7 @@
                 if (response.status === 401) {
                     showToast('Session expired. Please login again.', true);
                     clearAuth();
-                    showLoginScreen();
+                    window.location.href = 'join.html';
                     return;
                 }
                 
@@ -965,24 +872,49 @@
     
     // Initialize app
     async function init() {
-        const token = getAuthToken();
-        const storedUser = getUserData();
-        
-        // Inject token into leaf links if logged in
-        if (token) {
-            const leafLink = document.getElementById('leaf-terminal-link');
-            if (leafLink) leafLink.href = `/leaf/index.html#token=${token}`;
+        // Read token from any key login might have used
+        const token = localStorage.getItem('token') || localStorage.getItem('auth_token') || localStorage.getItem('leaf_saxo_token');
+
+        if (!token) {
+            window.location.href = 'join.html';
+            return;
         }
 
-        if (token && storedUser) {
-            authToken = token;
-            currentUser = storedUser;
-            await loadDashboard();
-        } else {
-            showLoginScreen();
+        // Sync all keys so every module is consistent
+        localStorage.setItem('token', token);
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('leaf_saxo_token', token);
+
+        authToken = token;
+
+        // Load user from any stored key
+        const userStr = localStorage.getItem('user') || localStorage.getItem('user_data');
+        if (userStr) {
+            try {
+                currentUser = JSON.parse(userStr);
+                localStorage.setItem('user', userStr);
+                localStorage.setItem('user_data', userStr);
+            } catch(e) { currentUser = null; }
         }
+
+        // Inject token into LEAF terminal link
+        const leafLink = document.getElementById('leaf-terminal-link');
+        if (leafLink) leafLink.href = `/leaf/index.html#token=${token}`;
+
+        // Show user name/email in nav if available
+        if (currentUser) {
+            const profileBtn = document.getElementById('user-profile-btn');
+            if (profileBtn) {
+                const initials = (currentUser.fullName || currentUser.name || currentUser.email || 'U')
+                    .split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+                profileBtn.innerHTML = `<span class="text-sm font-bold text-primary">${initials}</span>`;
+                profileBtn.title = currentUser.fullName || currentUser.email || '';
+            }
+        }
+
+        await loadDashboard();
     }
-    
+
     init();
 </script>
 </body>

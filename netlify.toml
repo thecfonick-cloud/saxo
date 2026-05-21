@@ -1,0 +1,14 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+  command = "echo 'No build required'"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["express", "mongoose", "bcryptjs", "jsonwebtoken", "multer", "cors", "helmet", "morgan", "@netlify/blobs"]
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api"
+  status = 200
+  force = true

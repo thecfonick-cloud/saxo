@@ -11,9 +11,9 @@ router.get('/', protect, async (req, res) => {
     try {
         let watchlist = await WatchlistItem.find();
         
-        // If no data, return default watchlist (aligned with dynamic base prices)
+        // If no data, seed default watchlist (aligned with dynamic base prices)
         if (watchlist.length === 0) {
-            watchlist = [
+            const defaults = [
                 { symbol: 'AAPL', name: 'Apple Inc.', price: 185.50, changePercent: 0.45, category: 'Stocks' },
                 { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 138.42, changePercent: -0.85, category: 'Stocks' },
                 { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 922.20, changePercent: 2.80, category: 'Stocks' },
@@ -23,6 +23,10 @@ router.get('/', protect, async (req, res) => {
                 { symbol: 'BTC', name: 'Bitcoin', price: 67500.00, changePercent: 2.50, category: 'Crypto' },
                 { symbol: 'ETH', name: 'Ethereum', price: 3520.00, changePercent: 1.20, category: 'Crypto' }
             ];
+            for (const item of defaults) {
+                await WatchlistItem.create(item);
+            }
+            watchlist = await WatchlistItem.find();
         }
         
         res.json(watchlist);

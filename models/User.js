@@ -13,7 +13,8 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
         lowercase: true,
-        trim: true
+        trim: true,
+        match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
     },
     password: {
         type: String,
@@ -44,6 +45,22 @@ const userSchema = new mongoose.Schema({
     isAdmin: {
         type: Boolean,
         default: false
+    },
+    totalRealEstateValue: {
+        type: Number,
+        default: 0
+    },
+    monthlyRentalIncome: {
+        type: Number,
+        default: 0
+    },
+    totalAppreciation: {
+        type: Number,
+        default: 0
+    },
+    propertyCount: {
+        type: Number,
+        default: 0
     },
     // Add to User schema
     role: {
