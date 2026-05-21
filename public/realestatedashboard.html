@@ -339,10 +339,7 @@
     }
 
     function clearAuth() {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user_data');
-        localStorage.removeItem('user');
+        ['auth_token','token','leaf_virexon_token','user_data','user'].forEach(k => localStorage.removeItem(k));
         authToken = null;
         currentUser = null;
     }
