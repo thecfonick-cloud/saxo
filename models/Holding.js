@@ -18,8 +18,7 @@ const holdingSchema = new mongoose.Schema({
     },
     shares: {
         type: Number,
-        required: true,
-        min: 0
+        required: true
     },
     averagePrice: {
         type: Number,
@@ -28,6 +27,19 @@ const holdingSchema = new mongoose.Schema({
     currentPrice: {
         type: Number,
         required: true
+    },
+    isMarginTrade: {
+        type: Boolean,
+        default: false
+    },
+    positionType: {
+        type: String,
+        enum: ['Long', 'Short'],
+        required: false
+    },
+    marginCost: {
+        type: Number,
+        required: false
     }
 });
 

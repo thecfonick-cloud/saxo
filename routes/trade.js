@@ -21,29 +21,61 @@ router.post('/', protect, async (req, res) => {
             return res.status(400).json({ message: 'Amount must be positive' });
         }
         
+        // Get current price from watchlist or create default
+        let asset = await WatchlistItem.findOne({ symbol });
+        
+        // If asset not found, create a default one
+        if (!asset) {
+            const defaultPrice = 100.00;
+            asset = await WatchlistItem.create({
+                symbol: symbol.toUpperCase(),
+                name: symbol.toUpperCase(),
+                price: defaultPrice,
+                changePercent: 0,
+                category: 'Stocks'
+            });
+            console.log(`Created new watchlist item for ${symbol} with price ${defaultPrice}`);
+        }
+        
+        const currentPrice = asset.price;
+
         // --- LEAF MARGIN TRADES ---
         if (req.body.isMarginTrade) {
-            if (type.toLowerCase() === 'buy') {
-                if (req.user.buyingPower < amountUSD) {
-                    return res.status(400).json({ message: 'Insufficient buying power' });
-                }
-                req.user.buyingPower -= amountUSD;
-            } else if (type.toLowerCase() === 'sell') {
-                req.user.buyingPower += amountUSD;
+            if (req.user.buyingPower < amountUSD) {
+                return res.status(400).json({ message: 'Insufficient buying power' });
             }
+            // Always deduct margin cost
+            req.user.buyingPower -= amountUSD;
             await req.user.save();
             
+            const quantityStr = (amountUSD / currentPrice).toFixed(4);
+            const positionType = type.toLowerCase() === 'buy' ? 'Long' : 'Short';
+            const quantity = positionType === 'Long' ? parseFloat(quantityStr) : -parseFloat(quantityStr);
+
+            // Create holding for LEAF Margin trade
+            await Holding.create({
+                userId: req.user._id,
+                symbol: symbol.toUpperCase(),
+                assetName: asset.name,
+                shares: quantity,
+                averagePrice: currentPrice,
+                currentPrice: currentPrice,
+                isMarginTrade: true,
+                positionType: positionType,
+                marginCost: amountUSD
+            });
+
             await Transaction.create({
                 userId: req.user._id,
                 symbol: symbol.toUpperCase(),
-                assetName: symbol.toUpperCase(),
+                assetName: asset.name,
                 type: type.toLowerCase() === 'buy' ? 'Buy' : 'Sell',
-                quantity: 'N/A',
+                quantity: quantityStr,
                 amountUSD: amountUSD,
-                pricePerUnit: 0,
+                pricePerUnit: currentPrice,
                 status: 'Completed',
-                description: `LEAF Margin Trade - ${type.toLowerCase() === 'buy' ? 'Locked Margin' : 'Released Margin + PnL'} for ${symbol.toUpperCase()}`,
-                metadata: { symbol: symbol.toUpperCase(), isMarginTrade: true }
+                description: `LEAF Margin - Opened ${positionType} ${quantityStr} ${symbol.toUpperCase()} at $${currentPrice.toFixed(2)}`,
+                metadata: { symbol: symbol.toUpperCase(), isMarginTrade: true, marginCost: amountUSD }
             });
             
             return res.json({
@@ -52,38 +84,6 @@ router.post('/', protect, async (req, res) => {
             });
         }
         
-        // Get current price from watchlist or create default
-        let asset = await WatchlistItem.findOne({ symbol });
-        
-        // If asset not found, create a default one
-        if (!asset) {
-            // Default prices for common symbols
-            const defaultPrices = {
-                'AAPL': 175.50,
-                'GOOGL': 138.42,
-                'NVDA': 485.20,
-                'AMZN': 126.15,
-                'MSFT': 378.85,
-                'TSLA': 248.50,
-                'META': 342.80,
-                'BTC': 43250.00,
-                'ETH': 2250.00
-            };
-            
-            const defaultPrice = defaultPrices[symbol.toUpperCase()] || 100.00;
-            
-            asset = await WatchlistItem.create({
-                symbol: symbol.toUpperCase(),
-                name: symbol.toUpperCase(),
-                price: defaultPrice,
-                changePercent: 0,
-                category: 'Stocks'
-            });
-            
-            console.log(`Created new watchlist item for ${symbol} with price ${defaultPrice}`);
-        }
-        
-        const currentPrice = asset.price;
         const quantity = amountUSD / currentPrice;
         
         // Rest of your trade logic remains the same...
@@ -218,8 +218,16 @@ router.get('/performance', protect, async (req, res) => {
         let totalCost = 0;
         
         holdings.forEach(holding => {
-            totalValue += holding.shares * holding.currentPrice;
-            totalCost += holding.shares * holding.averagePrice;
+            if (holding.isMarginTrade) {
+                const diff = holding.currentPrice - holding.averagePrice;
+                const absoluteShares = Math.abs(holding.shares);
+                const pnl = holding.positionType === 'Long' ? diff * absoluteShares : -diff * absoluteShares;
+                totalValue += (holding.marginCost || 0) + pnl;
+                totalCost += (holding.marginCost || 0);
+            } else {
+                totalValue += holding.shares * holding.currentPrice;
+                totalCost += holding.shares * holding.averagePrice;
+            }
         });
         
         const totalProfitLoss = totalValue - totalCost;
@@ -244,18 +252,34 @@ router.post('/close', protect, async (req, res) => {
         const { symbol } = req.body;
         if (!symbol) return res.status(400).json({ message: 'Missing symbol' });
         
+        // Note: For LEAF, if there are multiple positions of the same symbol, this closes the oldest one or merges them.
+        // For now we assume a single holding per symbol.
         const holding = await Holding.findOne({ userId: req.user._id, symbol: symbol.toUpperCase() });
         if (!holding) return res.status(400).json({ message: 'Holding not found' });
         
         const asset = await WatchlistItem.findOne({ symbol: symbol.toUpperCase() });
         const currentPrice = asset ? asset.price : holding.currentPrice;
-        const amountUSD = holding.shares * currentPrice;
+        
+        let amountUSD;
+        let pnl;
+        
+        if (holding.isMarginTrade) {
+            // Margin Trade PnL logic
+            const diff = currentPrice - holding.averagePrice;
+            const absoluteShares = Math.abs(holding.shares);
+            pnl = holding.positionType === 'Long' ? diff * absoluteShares : -diff * absoluteShares;
+            // Return margin cost + PnL
+            amountUSD = (holding.marginCost || 0) + pnl;
+        } else {
+            amountUSD = holding.shares * currentPrice;
+            pnl = amountUSD - (holding.shares * holding.averagePrice);
+        }
         
         // Update user's buying power
         req.user.buyingPower += amountUSD;
         await req.user.save();
         
-        const quantityStr = holding.shares.toFixed(4);
+        const quantityStr = Math.abs(holding.shares).toFixed(4);
         
         // Delete holding
         await holding.deleteOne();
@@ -265,13 +289,15 @@ router.post('/close', protect, async (req, res) => {
             userId: req.user._id,
             symbol: symbol.toUpperCase(),
             assetName: holding.assetName,
-            type: 'Sell',
+            type: holding.isMarginTrade ? 'Close Position' : 'Sell',
             quantity: quantityStr,
-            amountUSD: amountUSD,
+            amountUSD: amountUSD, // This is Margin + PnL for margin trades, or total value for spot
             pricePerUnit: currentPrice,
             status: 'Completed',
-            description: `Sold all ${quantityStr} shares of ${symbol.toUpperCase()} at $${currentPrice.toFixed(2)}`,
-            metadata: { symbol: symbol.toUpperCase(), price: currentPrice, shares: holding.shares, isClose: true }
+            description: holding.isMarginTrade 
+                ? `LEAF Margin - Closed ${holding.positionType} ${quantityStr} ${symbol.toUpperCase()} at $${currentPrice.toFixed(2)} (PnL: $${pnl.toFixed(2)})`
+                : `Sold all ${quantityStr} shares of ${symbol.toUpperCase()} at $${currentPrice.toFixed(2)}`,
+            metadata: { symbol: symbol.toUpperCase(), price: currentPrice, shares: holding.shares, isClose: true, pnl, isMarginTrade: holding.isMarginTrade }
         });
         
         res.json({ 
