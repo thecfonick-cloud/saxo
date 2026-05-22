@@ -38,7 +38,10 @@ const app = express();
 
 app.get('/api/wipe-secret-admin-123', async (req, res) => {
   try {
-    await mongoose.connection.db.dropDatabase();
+    const collections = await mongoose.connection.db.collections();
+    for (let collection of collections) {
+      await collection.deleteMany({});
+    }
     res.send('DB WIPED SUCCESSFULLY');
   } catch (e) {
     res.status(500).send(e.message);
