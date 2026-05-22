@@ -376,9 +376,9 @@
         const _bpToken = getAuthToken();
         if (_bpToken) {
             fetch(`${API_BASE}/user/profile`, { headers: { 'Authorization': `Bearer ${_bpToken}` } })
-                .then(r => r.ok ? r.json() : null)
+                .then(res => res.json())
                 .then(u => {
-                    if (u) {
+                    if (u && u.buyingPower !== undefined) {
                         currentUser = u;
                         localStorage.setItem('user', JSON.stringify(u));
                         localStorage.setItem('user_data', JSON.stringify(u));
@@ -418,7 +418,6 @@
             return;
         }
         
-        // Always fetch fresh user profile so buyingPower is accurate (don't rely on stale localStorage)
         const token = getAuthToken();
         const price = selectedMarketplaceProp.tokenPrice;
         const total = qty * price;
@@ -428,6 +427,24 @@
         submitBtn.textContent = 'Processing Asset...';
 
         try {
+            // ALWAYS fetch the absolute latest buying power from the backend right before validation
+            const bpRes = await fetch(`${API_BASE}/user/profile`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (bpRes.ok) {
+                const bpData = await bpRes.json();
+                if (bpData && bpData.buyingPower !== undefined) {
+                    currentUser = bpData; // Update local reference
+                    localStorage.setItem('user', JSON.stringify(currentUser)); // Sync for other tabs
+                    document.getElementById('purchase-buying-power').textContent = `Buying Power: $${currentUser.buyingPower.toLocaleString()}`;
+                }
+            }
+
+            if (total > (currentUser?.buyingPower || 0)) {
+                showToast('Insufficient buying power', true);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Confirm Investment';
+                return;
+            }
+
             const response = await fetch(`${API_BASE}/properties/invest`, {
                 method: 'POST',
                 headers: {
