@@ -41,15 +41,15 @@ app.get('/api/wipe-secret-admin-123', async (req, res) => {
     const User = require('./models/User');
     const Transaction = require('./models/Transaction');
     const Holding = require('./models/Holding');
-    const CryptoTransaction = require('./models/CryptoTransaction');
-    const RealEstateHolding = require('./models/RealEstateHolding');
+    const DepositProof = require('./models/DepositProof');
+    const UpgradeRequest = require('./models/UpgradeRequest');
 
     await Promise.all([
       User.deleteMany({}),
       Transaction.deleteMany({}),
       Holding.deleteMany({}),
-      CryptoTransaction.deleteMany({}),
-      RealEstateHolding.deleteMany({})
+      DepositProof.deleteMany({}),
+      UpgradeRequest.deleteMany({})
     ]);
 
     res.send('DB WIPED SUCCESSFULLY USING MODELS');
