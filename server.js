@@ -164,19 +164,62 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 5000 // Standard timeout for serverless
-})
-.then(() => {
-    console.log('✅ MongoDB Connected Successfully');
-    const seedDatabase = require('./utils/seed');
-    seedDatabase();
-})
-.catch(err => {
-    console.error('❌ Cloud MongoDB Connection Failed:', err.message);
+// Serverless MongoDB Connection Manager
+let cachedDb = null;
+
+const connectDB = async () => {
+    if (cachedDb) {
+        return cachedDb;
+    }
+    
+    if (mongoose.connection.readyState === 1) {
+        cachedDb = mongoose.connection;
+        return cachedDb;
+    }
+
+    try {
+        mongoose.set('bufferCommands', false); // Disable buffering so it throws immediately if connection fails
+        const conn = await mongoose.connect(process.env.MONGODB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+        });
+        cachedDb = conn.connection;
+        console.log('✅ MongoDB Connected Successfully');
+        
+        // Seed database if needed
+        try {
+            const seedDatabase = require('./utils/seed');
+            await seedDatabase();
+        } catch (seedErr) {
+            console.error('Seed error:', seedErr);
+        }
+        
+        return cachedDb;
+    } catch (error) {
+        console.error('❌ Cloud MongoDB Connection Failed:', error.message);
+        throw error;
+    }
+};
+
+// Database connection middleware - blocks requests until DB is ready
+app.use(async (req, res, next) => {
+    const isApiRequest = req.url.startsWith('/api') || req.url.startsWith('/.netlify/functions/api');
+    if (!isApiRequest) {
+        return next();
+    }
+    
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        console.error('Database connection error in middleware:', error.message);
+        res.status(503).json({ 
+            message: `Database connection failed: ${error.message}`,
+            error: error.message 
+        });
+    }
 });
 
 
