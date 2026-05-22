@@ -314,10 +314,11 @@ mongoose.set('bufferCommands', false);
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 500 // Ultra-fast timeout to fallback to mock mode instantly
+    serverSelectionTimeoutMS: 5000 // Standard timeout for serverless
 })
 .then(() => {
-    console.log('Ô£à MongoDB Connected Successfully');
+    mockModeEnabled = false;
+    console.log('✅ MongoDB Connected Successfully');
     const seedDatabase = require('./utils/seed');
     seedDatabase();
 })
