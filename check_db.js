@@ -1,13 +1,15 @@
-const fetch = globalThis.fetch || require('node-fetch');
-const JSON_BLOB_URL = 'https://jsonblob.com/api/jsonBlob/019e4a48-c718-7873-aae0-2c44b822fb8b';
-
-async function run() {
-    const response = await fetch(JSON_BLOB_URL);
-    const db = await response.json();
-    console.log("DB KEYS:", Object.keys(db));
-    if (db.users) console.log("USERS:", db.users.map(u => ({ id: u._id, email: u.email, buyingPower: u.buyingPower })));
-    if (db.depositProofs) console.log("DEPOSITS:", db.depositProofs.map(d => ({ id: d._id, userId: d.userId, amount: d.amount, status: d.status })));
-    if (db.transactions) console.log("TRANSACTIONS:", db.transactions.map(t => ({ id: t._id, userId: t.userId, amountUSD: t.amountUSD, type: t.type, status: t.status })));
-}
-
-run().catch(console.error);
+const mongoose = require('mongoose');
+mongoose.connect('mongodb+srv://thecfonick_dbUser:dqY52441A2AoOVcC@virexondb.tw5yfvx.mongodb.net/virexoncapital?retryWrites=true&w=majority')
+.then(async () => {
+    console.log('Connected!');
+    const db = mongoose.connection.db;
+    const collections = await db.listCollections().toArray();
+    console.log('Collections:', collections.map(c => c.name));
+    for (const c of collections) {
+        const docs = await db.collection(c.name).find({}).toArray();
+        console.log(`--- ${c.name} (${docs.length}) ---`);
+        console.log(docs);
+    }
+    process.exit(0);
+})
+.catch(err => { console.error('Error:', err.message); process.exit(1); });
