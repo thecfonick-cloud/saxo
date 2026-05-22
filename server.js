@@ -125,45 +125,6 @@ app.use((req, res, next) => {
 
 
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/portfolio', portfolioRoutes);
-app.use('/api/transactions', transactionRoutes);
-app.use('/api/watchlist', watchlistRoutes);
-app.use('/api/trade', tradeRoutes);
-app.use('/api/admin', adminRoutes); // Admin routes for verification
-app.use('/api/properties', propertyRoutes);
-app.use('/api/rental', rentalRoutes);
-
-// Health check
-app.get('/api/health', (req, res) => {
-    res.json({ 
-        status: 'OK', 
-        message: 'VirexonCapital API is running', 
-        timestamp: new Date(),
-        dbMode: 'mongodb'
-    });
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    
-    // Handle multer errors
-    if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ message: 'File too large. Maximum size is 5MB.' });
-    }
-    if (err.message === 'Only images and PDF files are allowed') {
-        return res.status(400).json({ message: err.message });
-    }
-    
-    res.status(err.status || 500).json({
-        message: err.message || 'Internal Server Error',
-        error: process.env.NODE_ENV === 'development' ? err : {}
-    });
-});
-
 // Serverless MongoDB Connection Manager
 let cachedDb = null;
 
@@ -215,11 +176,50 @@ app.use(async (req, res, next) => {
         next();
     } catch (error) {
         console.error('Database connection error in middleware:', error.message);
-        res.status(503).json({ 
+        return res.status(503).json({ 
             message: `Database connection failed: ${error.message}`,
             error: error.message 
         });
     }
+});
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/watchlist', watchlistRoutes);
+app.use('/api/trade', tradeRoutes);
+app.use('/api/admin', adminRoutes); // Admin routes for verification
+app.use('/api/properties', propertyRoutes);
+app.use('/api/rental', rentalRoutes);
+
+// Health check
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'OK', 
+        message: 'VirexonCapital API is running', 
+        timestamp: new Date(),
+        dbMode: 'mongodb'
+    });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    
+    // Handle multer errors
+    if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ message: 'File too large. Maximum size is 5MB.' });
+    }
+    if (err.message === 'Only images and PDF files are allowed') {
+        return res.status(400).json({ message: err.message });
+    }
+    
+    res.status(err.status || 500).json({
+        message: err.message || 'Internal Server Error',
+        error: process.env.NODE_ENV === 'development' ? err : {}
+    });
 });
 
 
