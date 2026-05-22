@@ -164,8 +164,7 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Connect to MongoDB with In-Memory fallback for local development/testing
-mongoose.set('bufferCommands', false);
+// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
