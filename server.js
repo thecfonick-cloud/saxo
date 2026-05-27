@@ -127,8 +127,13 @@ app.use((req, res, next) => {
 
 // Serverless MongoDB Connection Manager
 let cachedDb = null;
+let mockModeEnabled = false;
 
 const connectDB = async () => {
+    if (mockModeEnabled) {
+        return null;
+    }
+
     if (cachedDb) {
         return cachedDb;
     }
@@ -143,7 +148,7 @@ const connectDB = async () => {
         const conn = await mongoose.connect(process.env.MONGODB_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 5000,
+            serverSelectionTimeoutMS: 1500, // Quick timeout to fallback to mock database immediately if DNS fails
             socketTimeoutMS: 45000,
         });
         cachedDb = conn.connection;
@@ -159,8 +164,11 @@ const connectDB = async () => {
         
         return cachedDb;
     } catch (error) {
-        console.error('❌ Cloud MongoDB Connection Failed:', error.message);
-        throw error;
+        console.warn('⚠️ Cloud MongoDB Connection Failed. Enabling persistent JsonBlob Mock DB Mode...', error.message);
+        mockModeEnabled = true;
+        const { initMockDB } = require('./utils/mockDb');
+        initMockDB();
+        return null;
     }
 };
 
@@ -173,6 +181,10 @@ app.use(async (req, res, next) => {
     
     try {
         await connectDB();
+        if (mockModeEnabled) {
+            const { ensureDbLoaded } = require('./utils/mockDb');
+            await ensureDbLoaded();
+        }
         next();
     } catch (error) {
         console.error('Database connection error in middleware:', error.message);

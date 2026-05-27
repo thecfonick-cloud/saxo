@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-color: #0d1117;
+  --panel-bg: #161b22;
+  --panel-bg-2: #1c2128;
+  --panel-border: #21262d;
+  --panel-border-hover: #373e47;
+  --text-main: #e6edf3;
+  --text-muted: #7d8590;
+  --text-subtle: #484f58;
+  --accent-color: #2962ff;
+  --accent-hover: #1e53e5;
+  --accent-glow: rgba(41, 98, 255, 0.25);
+  --up-color: #26a69a;
+  --up-bg: rgba(38, 166, 154, 0.12);
+  --up-glow: rgba(38, 166, 154, 0.3);
+  --down-color: #ef5350;
+  --down-bg: rgba(239, 83, 80, 0.12);
+  --down-glow: rgba(239, 83, 80, 0.3);
+  --leaf-color: #39d353;
+  --leaf-glow: rgba(57, 211, 83, 0.3);
+  --chart-bg: #0d1117;
+  --chart-grid: #161b22;
+  --glass-bg: rgba(22, 27, 34, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Trebuchet MS", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-subtle); }
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: var(--font-family);
+  color: var(--text-main);
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+
+input {
+  font-family: var(--font-family);
+  color: var(--text-main);
+  background: var(--bg-color);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+input:focus { border-color: var(--accent-color); }
+input::placeholder { color: var(--text-subtle); }
+
+/* Hide TradingView logo watermark */
+.tv-lightweight-charts a,
+.tv-lightweight-charts > table tr:last-child > td:last-child > div { 
+  display: none !important; 
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
